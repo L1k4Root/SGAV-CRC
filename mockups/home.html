@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>SGAV-CRC - Inicio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f9fafb;
+    color: #333;
+  }
+  .header {
+    background-color: #004c6d;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+  }
+  .logo {
+    font-weight: bold;
+    font-size: 1.5rem;
+  }
+  .user-info span,
+  .user-info a {
+    margin-left: 1rem;
+    color: white;
+    text-decoration: none;
+  }
+  .dashboard {
+    padding: 2rem;
+  }
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+  }
+  .card {
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: transform 0.2s ease;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+  }
+  .card h2 {
+    margin-top: 0;
+  }
+  .card a {
+    display: inline-block;
+    margin-top: 1rem;
+    color: #004c6d;
+    text-decoration: none;
+    font-weight: bold;
+  }
+  .footer {
+    background-color: #e5e7eb;
+    text-align: center;
+    padding: 1rem;
+    font-size: 0.9rem;
+  }
+</style>
+</head>
+<body>
+  <header class="header">
+    <div class="logo">SGAV-CRC</div>
+    <div class="user-info">
+      <span>Bienvenido, Andrés</span>
+      <span class="role">Residente</span>
+      <a href="/perfil.html">👤</a>
+      <a href="/logout">🔓 Cerrar sesión</a>
+    </div>
+  </header>
+
+  <main class="dashboard">
+    <h1>Panel de Control</h1>
+    <section class="cards">
+      <div class="card">
+        <h2>🚗 Mis Vehículos</h2>
+        <p>Gestiona tus vehículos registrados y sus tokens de acceso.</p>
+        <a href="/vehiculos.html">➕ Agregar vehículo</a>
+      </div>
+
+      <div class="card">
+        <h2>🧾 Pre-registro de Visitas</h2>
+        <p>Autoriza visitantes antes de su llegada a la comunidad.</p>
+        <a href="/visitas.html">📅 Nuevo pre-registro</a>
+      </div>
+
+      <div class="card">
+        <h2>🛑 Reportar Incidente</h2>
+        <p>Notifica hechos sospechosos con texto, foto o ubicación.</p>
+        <a href="/reportes.html">⚠️ Reportar</a>
+      </div>
+
+      <div class="card">
+        <h2>🔔 Notificaciones</h2>
+        <p>Revisa alertas del sistema sobre accesos y eventos.</p>
+        <a href="/notificaciones.html">🔎 Ver todo</a>
+      </div>
+
+      <div class="card">
+        <h2>📈 Historial de Accesos</h2>
+        <p>Consulta el registro de entradas y salidas vehiculares.</p>
+        <a href="/bitacora.html">📊 Ver bitácora</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>© 2025 SGAV-CRC — Sistema de Gestión de Acceso Vehicular</p>
+  </footer>
+</body>
+</html>
