@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sgav_frontend/features/vehicles/presentation/vehicles_table.dart';
-import 'guard_panel.dart';          // solo para reutilizar la tabla
-import 'add_vehicle_page.dart';
+import 'package:sgav_frontend/shared/widgets/logout_button.dart';
+// solo para reutilizar la tabla
 
 class ResidentHome extends StatelessWidget {
   const ResidentHome({super.key});
@@ -9,7 +9,10 @@ class ResidentHome extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Mis vehículos')),
+      appBar: AppBar(
+        title: const Text('Mis vehículos'),
+        actions: const [LogoutButton()],
+      ),
       body: const VehiclesTablePage(),          // tabla que ya hiciste
       floatingActionButton: FloatingActionButton(
         tooltip: 'Añadir vehículo',

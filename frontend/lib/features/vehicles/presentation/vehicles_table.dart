@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:data_table_2/data_table_2.dart';
 
 class VehiclesTablePage extends StatefulWidget {
   const VehiclesTablePage({super.key});
@@ -104,20 +105,29 @@ class _VehiclesDataTableState extends State<_VehiclesDataTable> {
       ]);
     }).toList();
 
-    return SingleChildScrollView(
-      child: PaginatedDataTable(
-        rowsPerPage: _rowsPerPage,
-        header: const Text('Listado completo'),
-        columns: const [
-          DataColumn(label: Text('Patente')),
-          DataColumn(label: Text('Modelo')),
-          DataColumn(label: Text('Color')),
-          DataColumn(label: Text('Estado')),
-        ],
-        source: _TableSource(rows),
-        onPageChanged: (offset) => setState(() => _rowsOffset = offset),
-        initialFirstRowIndex: _rowsOffset,
-      ),
+    return LayoutBuilder(
+      builder: (ctx, constraints) {
+        return SizedBox(
+          height: constraints.maxHeight,
+          child: PaginatedDataTable2(
+            wrapInCard: true,
+            columnSpacing: 12,
+            horizontalMargin: 12,
+            minWidth: 600,
+            rowsPerPage: _rowsPerPage,
+            headingRowColor: MaterialStateProperty.all(Colors.grey[100]),
+            columns: const [
+              DataColumn2(label: Text('Patente'), size: ColumnSize.S),
+              DataColumn2(label: Text('Modelo'),  size: ColumnSize.M),
+              DataColumn2(label: Text('Color'),   size: ColumnSize.M),
+              DataColumn2(label: Text('Estado'),  size: ColumnSize.S),
+            ],
+            source: _TableSource(rows),
+            onPageChanged: (o) => setState(() => _rowsOffset = o),
+            initialFirstRowIndex: _rowsOffset,
+          ),
+        );
+      },
     );
   }
 }

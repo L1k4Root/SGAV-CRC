@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sgav_frontend/shared/widgets/logout_button.dart';
 import '../../../shared/services/api_client.dart';
 
 class GuardPanel extends StatefulWidget {
@@ -50,6 +51,7 @@ class _GuardPanelState extends State<GuardPanel> {
             tooltip: 'Registrar vehículo',
             onPressed: () => Navigator.pushNamed(context, '/add'),
           ),
+        const LogoutButton(),
         ],
       ),
       body: Center(

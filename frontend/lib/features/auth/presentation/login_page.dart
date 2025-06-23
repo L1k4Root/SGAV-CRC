@@ -32,10 +32,16 @@ class _LoginPageState extends State<LoginPage> {
     if (!mounted) return;
 
     // 2. Redirigir según rol
-    if (role == 'guard') {
-      Navigator.pushReplacementNamed(context, '/guard');
-    } else {
-      Navigator.pushReplacementNamed(context, '/resident');
+    switch (role) {
+      case 'guard':
+        Navigator.pushReplacementNamed(context, '/guard');
+        break;
+      case 'admin':
+        Navigator.pushReplacementNamed(context, '/admin');
+        break;
+      case 'resident':
+      default:
+        Navigator.pushReplacementNamed(context, '/resident');
     }
   } on FirebaseAuthException catch (e) {
     setState(() => _error = e.message);
@@ -54,13 +60,15 @@ class _LoginPageState extends State<LoginPage> {
         .createUserWithEmailAndPassword(
             email: _email.text.trim(), password: _pass.text.trim());
 
-    // 2. Guarda su rol en Firestore (por defecto 'resident')
+    // 2. Guarda su rol en Firestore (por defecto 'resident', o 'admin' si el correo es admin@sgav.com)
+    final email = cred.user!.email;
+    final role = email == 'admin@sgav.com' ? 'admin' : 'resident';
     await FirebaseFirestore.instance
         .collection('users')
         .doc(cred.user!.uid)
         .set({
-          'email': cred.user!.email,
-          'role': 'resident',
+          'email': email,
+          'role': role,
         });
 
     if (!mounted) return;
