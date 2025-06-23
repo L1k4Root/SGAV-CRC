@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -15,42 +16,63 @@ class _LoginPageState extends State<LoginPage> {
   String? _error;
 
   Future<void> _signIn() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
-    try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _email.text.trim(),
-        password: _pass.text.trim(),
-      );
-      if (!mounted) return;
-      Navigator.pushReplacementNamed(context, '/guard');
-    } on FirebaseAuthException catch (e) {
-      setState(() => _error = e.message);
-    } finally {
-      setState(() => _loading = false);
-    }
-  }
+  setState(() => _loading = true);
+  try {
+    await FirebaseAuth.instance.signInWithEmailAndPassword(
+      email: _email.text.trim(),
+      password: _pass.text.trim(),
+    );
 
-  Future<void> _register() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
-    try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: _email.text.trim(),
-        password: _pass.text.trim(),
-      );
-      if (!mounted) return;
+    // 1. Traer rol desde Firestore
+    final uid  = FirebaseAuth.instance.currentUser!.uid;
+    final doc  = await FirebaseFirestore.instance
+        .collection('users').doc(uid).get();
+    final role = doc.data()?['role'] as String? ?? 'resident';
+
+    if (!mounted) return;
+
+    // 2. Redirigir según rol
+    if (role == 'guard') {
       Navigator.pushReplacementNamed(context, '/guard');
-    } on FirebaseAuthException catch (e) {
-      setState(() => _error = e.message);
-    } finally {
-      setState(() => _loading = false);
+    } else {
+      Navigator.pushReplacementNamed(context, '/resident');
     }
+  } on FirebaseAuthException catch (e) {
+    setState(() => _error = e.message);
+  } finally {
+    setState(() => _loading = false);
   }
+}
+
+
+// Register
+  Future<void> _register() async {
+  setState(() => _loading = true);
+  try {
+    // 1. Crea el usuario en Firebase Auth
+    final cred = await FirebaseAuth.instance
+        .createUserWithEmailAndPassword(
+            email: _email.text.trim(), password: _pass.text.trim());
+
+    // 2. Guarda su rol en Firestore (por defecto 'resident')
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(cred.user!.uid)
+        .set({
+          'email': cred.user!.email,
+          'role': 'resident',
+        });
+
+    if (!mounted) return;
+    // 3. Redirige a la vista del residente
+    Navigator.pushReplacementNamed(context, '/resident');
+  } on FirebaseAuthException catch (e) {
+    setState(() => _error = e.message);
+  } finally {
+    setState(() => _loading = false);
+  }
+}
+
 
   @override
   Widget build(BuildContext context) {

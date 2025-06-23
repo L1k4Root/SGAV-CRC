@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:sgav_frontend/features/vehicles/presentation/resident_home.dart';
 import 'firebase_options.dart';
 import 'features/auth/presentation/login_page.dart';
 import 'features/vehicles/presentation/guard_panel.dart';
@@ -17,14 +18,15 @@ class SGAVApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'SGAV-CRC',
-      debugShowCheckedModeBanner: false,
-      initialRoute: '/',
-      routes: {
-        '/': (_) => const LoginPage(),
-        '/guard': (_) => const GuardPanel(),
-        '/add': (_) => const AddVehiclePage(),
-      },
-    );
-  }
+  debugShowCheckedModeBanner: false,
+  initialRoute: '/',
+  routes: {
+    '/':        (_) => const LoginPage(),
+    '/guard':   (_) => const GuardPanel(),
+    '/resident':(_) => const ResidentHome(),
+    '/add':     (_) => const AddVehiclePage(),
+  },
+);
+
+}
 }

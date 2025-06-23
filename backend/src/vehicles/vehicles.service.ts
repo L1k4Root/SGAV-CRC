@@ -20,5 +20,6 @@ export class VehiclesService {
   async checkAccess(plate: string) {
     const found = await this.repo.findByPlate(plate.toUpperCase());
     if (!found) throw new NotFoundException('Plate not registered');
-    return found; 
+    return found;
+  }
 }

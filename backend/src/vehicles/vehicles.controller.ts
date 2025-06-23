@@ -7,12 +7,12 @@ export class VehiclesController {
 
   @Get()
   async find(@Query('plate') plate: string) {
-    return await this.svc.findByPlate(plate.toUpperCase());
+    return await this.svc.checkAccess(plate.toUpperCase());
   }
 
   @Post()
   async create(@Body() dto: any) {
     dto.plate = dto.plate.toUpperCase();
-    return this.svc.addVehicle(dto);
+    return this.svc.registerVehicle(dto);
   }
 }
