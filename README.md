@@ -44,7 +44,7 @@ sgav-crc/
 ### macOS / Linux
 
 ```bash
-git clone https://github.com/tu-org/sgav-crc.git
+git clone https://github.com/L1k4Root/SGAV-CRC
 cd sgav-crc
 ./setup.sh            # instala dependencias back + front
 make dev-all          # levanta backend :3000 + frontend :8080
@@ -53,7 +53,7 @@ make dev-all          # levanta backend :3000 + frontend :8080
 ### Windows 10/11
 
 ```powershell
-git clone https://github.com/tu-org/sgav-crc.git
+git clone https://github.com/L1k4Root/SGAV-CRC
 cd sgav-crc
 powershell -ExecutionPolicy Bypass -File setup.ps1
 docker compose -f infra\docker-compose.yml up   # (o vea sección 3)
@@ -66,7 +66,7 @@ docker compose -f infra\docker-compose.yml up   # (o vea sección 3)
 > Única dependencia: **Docker Desktop** corriendo.
 
 ```bash
-git clone https://github.com/tu-org/sgav-crc.git
+git clone https://github.com/L1k4Root/SGAV-CRC
 cd sgav-crc
 docker compose -f infra/docker-compose.yml build   # 1ª vez
 docker compose -f infra/docker-compose.yml up
