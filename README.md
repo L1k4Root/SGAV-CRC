@@ -1,98 +1,158 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# SGAV-CRC — Sistema de Gestión de Acceso Vehicular
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+*Monorepo – NestJS (backend) · Flutter Web (frontend) · Firebase · Docker*
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## 🗂️ Estructura de carpetas
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
-
-```bash
-$ npm install
+```
+sgav-crc/
+├── .github/                GitHub Actions CI/CD
+├── backend/                 NestJS API  (sgav-backend)
+├── frontend/                Flutter Web (sgav_frontend)
+├── infra/
+│   ├── docker-compose.yml   stack local dev/prod
+│   └── docker/
+│        ├── backend.Dockerfile
+│        └── frontend.Dockerfile
+├── docs/                    ADR, diagramas C4, Swagger JSON...
+├── setup.sh                 instalador Linux / macOS
+├── setup.ps1                instalador Windows PowerShell
+└── README.md
 ```
 
-## Compile and run the project
+---
+
+## 1. Requisitos
+
+| Herramienta         | Versión sugerida   | macOS / Linux                                  | Windows                     |
+| ------------------- | ------------------ | ---------------------------------------------- | --------------------------- |
+| **Docker Desktop**  | ≥ 4.x (compose v2) | ✅                                              | ✅                           |
+| **Node.js**         | 20 LTS             | `nvm install 20` ó `brew`                      | winget `OpenJS.NodeJS.LTS`  |
+| **pnpm**            | ≥ 8                | `npm i -g pnpm`                                | winget `PNPM.PNPM`          |
+| **Flutter SDK**     | 3.22.x             | `git clone https://github.com/flutter/flutter` | winget `Flutter.Flutter`    |
+| **Firebase CLI**    | ≥ 13               | `pnpm i -g firebase-tools`                     | winget `Google.FirebaseCLI` |
+| **Dart pub global** | —                  | `dart pub global activate flutterfire_cli`     | idéntico                    |
+
+> **⚠️ No deseas instalar nada?** Salta a **Instalación vía Docker**.
+
+---
+
+## 2. Instalación rápida (entorno local sin Docker)
+
+### macOS / Linux
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+git clone https://github.com/tu-org/sgav-crc.git
+cd sgav-crc
+./setup.sh            # instala dependencias back + front
+make dev-all          # levanta backend :3000 + frontend :8080
 ```
 
-## Run tests
+### Windows 10/11
+
+```powershell
+git clone https://github.com/tu-org/sgav-crc.git
+cd sgav-crc
+powershell -ExecutionPolicy Bypass -File setup.ps1
+docker compose -f infra\docker-compose.yml up   # (o vea sección 3)
+```
+
+---
+
+## 3. Instalación vía **Docker**
+
+> Única dependencia: **Docker Desktop** corriendo.
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+git clone https://github.com/tu-org/sgav-crc.git
+cd sgav-crc
+docker compose -f infra/docker-compose.yml build   # 1ª vez
+docker compose -f infra/docker-compose.yml up
 ```
 
-## Deployment
+| Servicio                  | URL local                                                | Notas                                           |
+| ------------------------- | -------------------------------------------------------- | ----------------------------------------------- |
+| Flutter Web               | [http://localhost:8080](http://localhost:8080)           | API\_URL interno apunta a `http://backend:3000` |
+| Swagger                   | [http://localhost:3000/docs](http://localhost:3000/docs) | prueba endpoints                                |
+| Firestore emulator (opc.) | [http://localhost:8083](http://localhost:8083)           | activado en compose                             |
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+---
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+## 4. Variables de entorno
+
+| Archivo            | Propósito                                       | Ejemplo                                                            |
+| ------------------ | ----------------------------------------------- | ------------------------------------------------------------------ |
+| **backend/.env**   | claves Nest, Firebase admin                     | `PORT=3000`<br>`GOOGLE_APPLICATION_CREDENTIALS=/app/firebase.json` |
+| **frontend/build** | se inyectan con `--dart-define` o `.env` plugin | `API_URL=http://localhost:3000`                                    |
+
+> Copia `backend/.env.example → backend/.env` y ajusta.
+
+---
+
+## 5. Comandos útiles (`make`)
+
+| Comando                | Acción                             |
+| ---------------------- | ---------------------------------- |
+| `make dev-backend`     | NestJS con hot-reload (`backend/`) |
+| `make dev-frontend`    | Flutter web en Chrome              |
+| `make dev-all`         | Ambos en paralelo (*concurrently*) |
+| `make build-frontend`  | `flutter build web`                |
+| `make deploy-firebase` | sube build a Firebase Hosting      |
+
+*(Windows: `make` → `mingw32-make` o ejecuta los comandos manualmente.)*
+
+---
+
+## 6. Primeros pasos en la app
+
+1. **Crear cuenta** (correo + pass) → se almacena con rol `resident`.
+2. **Registrar vehículo** → botón ➕.
+3. **Acceso guardia**
+   *En Firestore → users* cambia `role` a `guard` y vuelve a iniciar sesión → se mostrará el panel semáforo.
+
+---
+
+## 7. Tests
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+# backend
+cd backend
+pnpm test           # unit (Jest)
+pnpm test:e2e       # Supertest + in-memory emulador
+
+# frontend
+cd ../frontend
+flutter test        # widget tests
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+CI default (GitHub Actions) ejecuta lint + tests en cada PR.
 
-## Resources
+---
 
-Check out a few resources that may come in handy when working with NestJS:
+## 8. Despliegue producción
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+| Paso | Docker                                             | Firebase Hosting solo front      |
+| ---- | -------------------------------------------------- | -------------------------------- |
+| 1    | `docker compose -f infra/docker-compose.yml build` | `flutter build web`              |
+| 2    | Push a tu registry / VM / AWS ECS                  | `firebase deploy --only hosting` |
+| 3    | Crea un dominio o LB hacia contenedor `frontend`   | API Nest expuesto públicamente   |
 
-## Support
+---
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## 9. Preguntas frecuentes
 
-## Stay in touch
+| Problema                              | Solución                                                                         |
+| ------------------------------------- | -------------------------------------------------------------------------------- |
+| **“field 'inactive' does not exist”** | Agrega el campo `inactive` al documento ó comprueba `containsKey` en el widget.  |
+| **CORS 404 desde Flutter**            | Verifica `API_URL` y que `app.enableCors({origin:'*'})` esté activo en Nest dev. |
+| **FlutterFire CLI not found**         | Asegura `$HOME/.pub-cache/bin` está en `$PATH`.                                  |
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+---
 
-## License
+## 10. Créditos & Licencia
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Proyecto de título – Universidad Andrés Bello
+Autor: **Andrés A. Pérez A.**
+Licencia MIT (ver LICENSE).

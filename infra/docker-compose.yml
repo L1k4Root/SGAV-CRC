@@ -1,0 +1,33 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: ..
+      dockerfile: infra/docker/backend.Dockerfile
+    command: node dist/main.js            # Nest compilado
+    ports:
+      - "3000:3000"
+    env_file:
+      - ../backend/.env                   # variables Nest
+    volumes:
+      - ../backend:/app                   # ⬅️ hot-reload (dev) comenta en prod
+    depends_on:
+      - firestore
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: infra/docker/frontend.Dockerfile
+    ports:
+      - "8080:80"                         # http://localhost:8080
+    depends_on:
+      - backend
+
+  # opcional: emulador Firestore local
+  firestore:
+    image: google/cloud-sdk:latest
+    command: >
+      gcloud beta emulators firestore start --host-port=0.0.0.0:8083
+    ports:
+      - "8083:8083"
