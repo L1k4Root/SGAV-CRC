@@ -17,31 +17,40 @@ class UsersTablePage extends StatelessWidget {
           if (!snap.hasData)        return const Center(child: CircularProgressIndicator());
 
           final docs = snap.data!.docs;
-          return SingleChildScrollView(
-            child: DataTable(
-              columns: const [
-                DataColumn(label: Text('Email')),
-                DataColumn(label: Text('Rol')),
-                DataColumn(label: Text('Acción')),
-              ],
-              rows: docs.map((d) {
-                final data = d.data()! as Map<String, dynamic>;
-                final email = data['email'] as String? ?? '—';
-                final role  = data['role']  as String? ?? 'resident';
-
-                return DataRow(cells: [
-                  DataCell(Text(email)),
-                  DataCell(Text(role)),
-                  DataCell(
-                    IconButton(
-                      icon: const Icon(Icons.edit, size: 18),
-                      tooltip: 'Cambiar rol',
-                      onPressed: () => _showRoleDialog(context, d.id, role),
+          return LayoutBuilder(
+            builder: (ctx2, constraints) {
+              return Center(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                    child: DataTable(
+                      columns: const [
+                        DataColumn(label: Text('Email')),
+                        DataColumn(label: Text('Rol')),
+                        DataColumn(label: Text('Acción')),
+                      ],
+                      rows: docs.map((d) {
+                        final data = d.data()! as Map<String, dynamic>;
+                        final email = data['email'] as String? ?? '—';
+                        final role  = data['role']  as String? ?? 'resident';
+                        return DataRow(cells: [
+                          DataCell(Text(email)),
+                          DataCell(Text(role)),
+                          DataCell(
+                            IconButton(
+                              icon: const Icon(Icons.edit, size: 18),
+                              tooltip: 'Cambiar rol',
+                              onPressed: () => _showRoleDialog(context, d.id, role),
+                            ),
+                          ),
+                        ]);
+                      }).toList(),
                     ),
                   ),
-                ]);
-              }).toList(),
-            ),
+                ),
+              );
+            },
           );
         },
       ),

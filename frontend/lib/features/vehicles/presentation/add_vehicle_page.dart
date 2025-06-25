@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../../../shared/services/api_client.dart';
 
@@ -21,10 +23,14 @@ class _AddVehiclePageState extends State<AddVehiclePage> {
       _loading = true;
       _msg = null;
     });
-    await _api.addVehicle({
+    final user = FirebaseAuth.instance.currentUser!;
+    await FirebaseFirestore.instance.collection('vehicles').add({
       'plate': _plate.text.trim().toUpperCase(),
       'model': _model.text.trim(),
       'color': _color.text.trim(),
+      'ownerId': user.uid,
+      'ownerEmail': user.email,
+      'createdAt': FieldValue.serverTimestamp(),
     });
     setState(() {
       _loading = false;

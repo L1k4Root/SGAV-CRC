@@ -4,7 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:data_table_2/data_table_2.dart';
 
 class VehiclesTablePage extends StatefulWidget {
-  const VehiclesTablePage({super.key});
+  final String ownerId;
+  const VehiclesTablePage({super.key, required this.ownerId});
   @override
   State<VehiclesTablePage> createState() => _VehiclesTablePageState();
 }
@@ -14,14 +15,18 @@ class _VehiclesTablePageState extends State<VehiclesTablePage> {
   String _filter = '';
 
   @override
+  Widget build(BuildContext context) {
+    final isAdmin = ModalRoute.of(context)?.settings.name == '/vehicles-admin';
+  @override
   void dispose() {
     _search.dispose();
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final query = FirebaseFirestore.instance.collection('vehicles');
+    final query = isAdmin
+        ? FirebaseFirestore.instance.collection('vehicles').orderBy('createdAt')
+        : FirebaseFirestore.instance.collection('vehicles')
+            .where('ownerId', isEqualTo: widget.ownerId);
 
     return Scaffold(
       appBar: AppBar(
@@ -80,15 +85,19 @@ class _VehiclesDataTableState extends State<_VehiclesDataTable> {
 
   @override
   Widget build(BuildContext context) {
+    final isAdmin = ModalRoute.of(context)?.settings.name == '/vehicles-admin';
+
     final rows = widget.docs.map((d) {
       final plate = d['plate'] as String;
       final data = d.data() as Map<String, dynamic>;
       final model = data['model'] ?? '-';
       final color = data['color'] ?? '-';
       final active = !(data.containsKey('inactive') ? data['inactive'] as bool : false);
+      final owner = data['ownerEmail'] ?? '—';
 
       return DataRow(cells: [
         DataCell(Text(plate, style: GoogleFonts.inter(fontWeight: FontWeight.w600))),
+        if (isAdmin) DataCell(Text(owner)),
         DataCell(Text(model)),
         DataCell(Text(color)),
         DataCell(Container(
@@ -105,6 +114,15 @@ class _VehiclesDataTableState extends State<_VehiclesDataTable> {
       ]);
     }).toList();
 
+    final columns = [
+      const DataColumn2(label: Text('Patente'), size: ColumnSize.S),
+      if (isAdmin)
+        const DataColumn2(label: Text('Owner'),  size: ColumnSize.M),
+      const DataColumn2(label: Text('Modelo'),  size: ColumnSize.M),
+      const DataColumn2(label: Text('Color'),   size: ColumnSize.M),
+      const DataColumn2(label: Text('Estado'),  size: ColumnSize.S),
+    ];
+
     return LayoutBuilder(
       builder: (ctx, constraints) {
         return SizedBox(
@@ -115,13 +133,8 @@ class _VehiclesDataTableState extends State<_VehiclesDataTable> {
             horizontalMargin: 12,
             minWidth: 600,
             rowsPerPage: _rowsPerPage,
-            headingRowColor: MaterialStateProperty.all(Colors.grey[100]),
-            columns: const [
-              DataColumn2(label: Text('Patente'), size: ColumnSize.S),
-              DataColumn2(label: Text('Modelo'),  size: ColumnSize.M),
-              DataColumn2(label: Text('Color'),   size: ColumnSize.M),
-              DataColumn2(label: Text('Estado'),  size: ColumnSize.S),
-            ],
+            headingRowColor: WidgetStateProperty.all(Colors.grey[100]),
+            columns: columns,
             source: _TableSource(rows),
             onPageChanged: (o) => setState(() => _rowsOffset = o),
             initialFirstRowIndex: _rowsOffset,

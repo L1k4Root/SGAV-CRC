@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -81,6 +82,49 @@ class _LoginPageState extends State<LoginPage> {
   }
 }
 
+// Botones rápidos de autologin (solo en modo debug)
+Widget _quickLoginButtons() {
+  if (!kDebugMode) return const SizedBox.shrink();
+  return Column(
+    children: [
+      ElevatedButton(
+        onPressed: () {
+          _email.text = 'admin@sgav.dev';
+          _pass.text  = 'SGAV1234';
+        },
+        child: const Text('Autocompletar Admin'),
+      ),
+      ElevatedButton(
+        onPressed: () {
+          _email.text = 'resident@sgav.dev';
+          _pass.text  = 'Qwerty123';
+        },
+        child: const Text('Autocompletar Residente 1'),
+      ),
+      ElevatedButton(
+        onPressed: () {
+          _email.text = 'resident2@sgav.dev';
+          _pass.text  = 'Qwerty123';
+        },
+        child: const Text('Autocompletar Residente 2'),
+      ),
+      ElevatedButton(
+        onPressed: () {
+          _email.text = 'guard@sgav.dev';
+          _pass.text  = 'Qwerty123';
+        },
+        child: const Text('Autocompletar Guardia 1'),
+      ),
+      ElevatedButton(
+        onPressed: () {
+          _email.text = 'guard2@sgav.dev';
+          _pass.text  = 'Qwerty123';
+        },
+        child: const Text('Autocompletar Guardia 2'),
+      ),
+    ],
+  );
+}
 
   @override
   Widget build(BuildContext context) {
@@ -108,6 +152,8 @@ class _LoginPageState extends State<LoginPage> {
                     decoration: const InputDecoration(labelText: 'Contraseña'),
                     obscureText: true,
                   ),
+                  const SizedBox(height: 16),
+                  _quickLoginButtons(),
                   if (_error != null) ...[
                     const SizedBox(height: 12),
                     Text(_error!, style: const TextStyle(color: Colors.red)),
