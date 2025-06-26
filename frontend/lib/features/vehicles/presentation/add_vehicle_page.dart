@@ -1,7 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import '../../../shared/services/api_client.dart';
+import '../../../shared/repositories/vehicles_repository.dart';
+import '../../../shared/models/vehicles.dto.dart';
+import '../../../../widgets/vehicle_form.dart';
 
 class AddVehiclePage extends StatefulWidget {
   const AddVehiclePage({super.key});
@@ -11,34 +15,9 @@ class AddVehiclePage extends StatefulWidget {
 }
 
 class _AddVehiclePageState extends State<AddVehiclePage> {
-  final _plate = TextEditingController();
-  final _model = TextEditingController();
-  final _color = TextEditingController();
-  final _api = ApiClient();
   bool _loading = false;
   String? _msg;
-
-  Future<void> _save() async {
-    setState(() {
-      _loading = true;
-      _msg = null;
-    });
-    final user = FirebaseAuth.instance.currentUser!;
-    await FirebaseFirestore.instance.collection('vehicles').add({
-      'plate': _plate.text.trim().toUpperCase(),
-      'model': _model.text.trim(),
-      'color': _color.text.trim(),
-      'ownerId': user.uid,
-      'ownerEmail': user.email,
-      'createdAt': FieldValue.serverTimestamp(),
-    });
-    setState(() {
-      _loading = false;
-      _msg = 'Vehículo registrado ✔️';
-    });
-    await Future.delayed(const Duration(seconds: 1));
-    if (mounted) Navigator.pop(context);
-  }
+  final _repo = VehiclesRepository();
 
   @override
   Widget build(BuildContext context) {
@@ -52,19 +31,22 @@ class _AddVehiclePageState extends State<AddVehiclePage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                TextField(controller: _plate, decoration: const InputDecoration(labelText: 'Patente')),
-                const SizedBox(height: 12),
-                TextField(controller: _model, decoration: const InputDecoration(labelText: 'Modelo')),
-                const SizedBox(height: 12),
-                TextField(controller: _color, decoration: const InputDecoration(labelText: 'Color')),
-                const SizedBox(height: 24),
-                _loading
-                    ? const CircularProgressIndicator()
-                    : ElevatedButton.icon(
-                        icon: const Icon(Icons.save),
-                        label: const Text('Guardar'),
-                        onPressed: _save,
-                      ),
+                VehicleForm(
+                  ownerId: FirebaseAuth.instance.currentUser!.uid,
+                  ownerEmail: FirebaseAuth.instance.currentUser!.email!,
+                  isLoading: _loading,
+                  submitLabel: 'Guardar',
+                  onSubmit: (VehicleDto dto) async {
+                    setState(() { _loading = true; _msg = null; });
+                    await _repo.addVehicle(dto);
+                    setState(() {
+                      _loading = false;
+                      _msg = 'Vehículo registrado ✔️';
+                    });
+                    await Future.delayed(const Duration(seconds: 1));
+                    if (mounted) Navigator.pop(context);
+                  },
+                ),
                 if (_msg != null) ...[
                   const SizedBox(height: 16),
                   Text(_msg!, style: const TextStyle(color: Colors.green)),

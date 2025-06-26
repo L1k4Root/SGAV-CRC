@@ -3,7 +3,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:data_table_2/data_table_2.dart';
 
+import '../../../shared/repositories/vehicles_repository.dart';
+
 class VehiclesTablePage extends StatefulWidget {
+  final String ownerId;
+  const VehiclesTablePage({super.key, required this.ownerId});
   final String ownerId;
   const VehiclesTablePage({super.key, required this.ownerId});
   @override
@@ -18,11 +22,18 @@ class _VehiclesTablePageState extends State<VehiclesTablePage> {
   Widget build(BuildContext context) {
     final isAdmin = ModalRoute.of(context)?.settings.name == '/vehicles-admin';
   @override
+  Widget build(BuildContext context) {
+    final isAdmin = ModalRoute.of(context)?.settings.name == '/vehicles-admin';
+  @override
   void dispose() {
     _search.dispose();
     super.dispose();
   }
 
+    final query = isAdmin
+        ? FirebaseFirestore.instance.collection('vehicles').orderBy('createdAt')
+        : FirebaseFirestore.instance.collection('vehicles')
+            .where('ownerId', isEqualTo: widget.ownerId);
     final query = isAdmin
         ? FirebaseFirestore.instance.collection('vehicles').orderBy('createdAt')
         : FirebaseFirestore.instance.collection('vehicles')
@@ -83,6 +94,39 @@ class _VehiclesDataTableState extends State<_VehiclesDataTable> {
   static const _rowsPerPage = 10;
   int _rowsOffset = 0;
 
+  final _repo = VehiclesRepository();
+
+  Future<void> _toggleActive(String docId, bool active) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: Text(active ? 'Desactivar invitación' : 'Reactivar invitación'),
+        content: Text(
+          active
+              ? 'Después de desactivarla el vehículo ya no podrá ingresar.\n¿Confirmar?'
+              : '¿Confirmar reactivación de la invitación?',
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Cancelar')),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(c, true),
+            child: const Text('Confirmar'),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+
+    await FirebaseFirestore.instance.collection('vehicles').doc(docId).update({
+      'active': !active,
+      'pendingOut': false,
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(active ? 'Invitación desactivada' : 'Invitación reactivada')),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isAdmin = ModalRoute.of(context)?.settings.name == '/vehicles-admin';
@@ -92,7 +136,9 @@ class _VehiclesDataTableState extends State<_VehiclesDataTable> {
       final data = d.data() as Map<String, dynamic>;
       final model = data['model'] ?? '-';
       final color = data['color'] ?? '-';
-      final active = !(data.containsKey('inactive') ? data['inactive'] as bool : false);
+      final active = data.containsKey('active')
+          ? (data['active'] as bool)
+          : true; // default true if field missing
       final owner = data['ownerEmail'] ?? '—';
 
       return DataRow(cells: [
@@ -111,6 +157,49 @@ class _VehiclesDataTableState extends State<_VehiclesDataTable> {
                   color: active ? Colors.green[800] : Colors.red[800],
                   fontWeight: FontWeight.w500)),
         )),
+        if (!isAdmin)
+          DataCell(
+            IconButton(
+              icon: Icon(
+                active ? Icons.block : Icons.check_circle,
+                size: 18,
+                color: active ? Colors.red : Colors.green,
+              ),
+              tooltip: active ? 'Desactivar' : 'Reactivar',
+              onPressed: () => _toggleActive(d.id, active),
+            ),
+          ),
+        DataCell(
+          IconButton(
+            icon: const Icon(Icons.delete, color: Colors.red),
+            tooltip: 'Eliminar vehículo',
+            onPressed: () async {
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: const Text('Confirmar eliminación'),
+                  content: Text('¿Eliminar vehículo $plate?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(ctx).pop(false),
+                      child: const Text('Cancelar'),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(ctx).pop(true),
+                      child: const Text('Eliminar'),
+                    ),
+                  ],
+                ),
+              );
+              if (confirmed == true) {
+                await _repo.delete(d.id);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Vehículo eliminado')),
+                );
+              }
+            },
+          ),
+        ),
       ]);
     }).toList();
 
@@ -121,6 +210,9 @@ class _VehiclesDataTableState extends State<_VehiclesDataTable> {
       const DataColumn2(label: Text('Modelo'),  size: ColumnSize.M),
       const DataColumn2(label: Text('Color'),   size: ColumnSize.M),
       const DataColumn2(label: Text('Estado'),  size: ColumnSize.S),
+      if (!isAdmin)
+        const DataColumn2(label: Text('Acción'), size: ColumnSize.S),
+      const DataColumn2(label: Text('Eliminar'), size: ColumnSize.S),
     ];
 
     return LayoutBuilder(

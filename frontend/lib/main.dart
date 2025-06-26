@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:sgav_frontend/features/admin/presentation/admin_home.dart';
 import 'package:sgav_frontend/features/admin/presentation/users_table.dart';
+import 'package:sgav_frontend/features/admin/presentation/admin_home.dart';
+import 'package:sgav_frontend/features/admin/presentation/users_table.dart';
 import 'package:sgav_frontend/features/vehicles/presentation/resident_home.dart';
 import 'package:sgav_frontend/features/vehicles/presentation/vehicles_table.dart';
 import 'firebase_options.dart';
@@ -26,9 +28,9 @@ class SGAVApp extends StatelessWidget {
   routes: {
     '/':        (_) => const LoginPage(),
     '/guard':   (_) => const GuardPanel(),
-    '/resident':(_) => const ResidentHome(),
+    '/resident':(_) => const ResidentHome(), 
     '/add':     (_) => const AddVehiclePage(),
-    '/vehicles-admin': (_) => const VehiclesTablePage(),
+    '/vehicles-admin': (_) => const VehiclesTablePage(ownerId: ''), 
     '/admin':     (_) => const AdminHome(),   
     '/users':     (_) => const UsersTablePage(),  
   },
