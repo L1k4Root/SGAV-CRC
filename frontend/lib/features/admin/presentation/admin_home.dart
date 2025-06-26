@@ -47,6 +47,12 @@ class AdminHome extends StatelessWidget {
                           onPressed: () => Navigator.pushNamed(context, '/users'), // ajusta la ruta si tienes otra pantalla
                         ),
                         const SizedBox(height: 6),
+                        ElevatedButton.icon(
+                          icon: const Icon(Icons.person_add),
+                          label: const Text('Añadir nuevo usuario'),
+                          onPressed: () => Navigator.pushNamed(context, '/add-user'),
+                        ),
+                        const SizedBox(height: 6),
                       ],
                     ),
                   ),
@@ -82,7 +88,7 @@ class AdminHome extends StatelessWidget {
                         ElevatedButton.icon(
                           icon: const Icon(Icons.history_toggle_off),
                           label: const Text('Historial de accesos por vehículo'),
-                          onPressed: null, // Placeholder
+                          onPressed: () => Navigator.pushNamed(context, '/vehicle-access-traceability'),
                         ),
                         const SizedBox(height: 6),
                       ],

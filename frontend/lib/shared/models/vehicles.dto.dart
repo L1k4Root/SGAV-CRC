@@ -74,6 +74,12 @@ class VehicleDto {
     };
   }
 
+  /// Alias for fromJson to support repositories using fromMap.
+  factory VehicleDto.fromMap(Map<String, dynamic> map) => VehicleDto.fromJson(map);
+
+  /// Alias for toJson to support repositories using toMap.
+  Map<String, dynamic> toMap() => toJson();
+
   // ---------- Utilities ---------- //
 
   VehicleDto copyWith({

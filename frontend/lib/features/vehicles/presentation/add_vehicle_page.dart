@@ -1,11 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../repositories/vehicles_repository.dart';
 import '../../../shared/models/vehicles.dto.dart';
 import '../../../../widgets/vehicle_form.dart';
+import '../services/vehicle_service.dart';
 
 class AddVehiclePage extends StatefulWidget {
   const AddVehiclePage({super.key});
@@ -17,7 +16,7 @@ class AddVehiclePage extends StatefulWidget {
 class _AddVehiclePageState extends State<AddVehiclePage> {
   bool _loading = false;
   String? _msg;
-  final _repo = VehiclesRepository();
+  final _service = VehicleService();
 
   @override
   Widget build(BuildContext context) {
@@ -39,23 +38,20 @@ class _AddVehiclePageState extends State<AddVehiclePage> {
                   onSubmit: (VehicleDto dto) async {
                     setState(() { _loading = true; _msg = null; });
 
-                    // 🚫 Verifica si la patente ya existe
-                    final exists = await _repo.getByPlate(dto.plate);
-                    if (exists != null) {
+                    try {
+                      await _service.addPermanent(dto);
                       setState(() {
                         _loading = false;
-                        _msg = 'La patente ya está registrada';
+                        _msg = 'Vehículo registrado ✔️';
                       });
-                      return;
+                      await Future.delayed(const Duration(seconds: 1));
+                      if (mounted) Navigator.pop(context);
+                    } catch (e) {
+                      setState(() {
+                        _loading = false;
+                        _msg = e.toString().replaceFirst('Exception: ', '');
+                      });
                     }
-
-                    await _repo.addVehicle(dto);
-                    setState(() {
-                      _loading = false;
-                      _msg = 'Vehículo registrado ✔️';
-                    });
-                    await Future.delayed(const Duration(seconds: 1));
-                    if (mounted) Navigator.pop(context);
                   },
                 ),
                 if (_msg != null) ...[

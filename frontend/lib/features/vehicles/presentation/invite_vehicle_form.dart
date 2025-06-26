@@ -1,8 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../repositories/vehicles_repository.dart';
 import '../../../shared/models/vehicles.dto.dart';
 import '../../../../widgets/vehicle_form.dart';
+import '../services/vehicle_service.dart';
 
 /// Formulario para que el residente invite un vehículo temporal o permanente.
 class InviteVehicleForm extends StatefulWidget {
@@ -20,7 +22,7 @@ class InviteVehicleForm extends StatefulWidget {
 
 class _InviteVehicleFormState extends State<InviteVehicleForm> {
   bool _loading = false;
-  final _repo = VehiclesRepository();
+  final _service = VehicleService();
 
   @override
   Widget build(BuildContext context) {
@@ -38,21 +40,22 @@ class _InviteVehicleFormState extends State<InviteVehicleForm> {
           onSubmit: (VehicleDto dto) async {
             setState(() { _loading = true; });
 
-            // 🚫 Verifica si la patente ya existe
-            final exists = await _repo.getByPlate(dto.plate);
-            if (exists != null) {
+            try {
+              await _service.addInvite(dto);
+              setState(() { _loading = false; });
+              if (mounted) Navigator.pop(context);
+            } catch (e) {
               setState(() { _loading = false; });
               if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Esta patente ya está registrada')),
-                );
+                if (kDebugMode) {
+                  debugPrint('ERROR ▸ ${e.toString()}');
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+                  );
+                }
               }
-              return;
             }
-
-            await _repo.addVehicle(dto);
-            setState(() { _loading = false; });
-            if (mounted) Navigator.pop(context);
           },
         ),
       ),

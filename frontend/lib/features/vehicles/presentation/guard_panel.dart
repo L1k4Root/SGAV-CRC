@@ -74,6 +74,7 @@ class VehicleInfoCard extends StatelessWidget {
           children: [
             Text('Modelo: ${data['model'] ?? '-'}'),
             Text('Color : ${data['color'] ?? '-'}'),
+            Text('Residente: ${data['ownerEmail'] ?? '-'}'),
             Text('Estado: ${data['active'] == true ? 'Activo' : 'Inactivo'}'),
           ],
         ),

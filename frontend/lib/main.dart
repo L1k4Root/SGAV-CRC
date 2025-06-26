@@ -10,7 +10,8 @@ import 'firebase_options.dart';
 import 'features/auth/presentation/login_page.dart';
 import 'features/vehicles/presentation/guard_panel.dart';
 import 'features/vehicles/presentation/add_vehicle_page.dart';
-
+import 'features/admin/presentation/add_user.dart';
+import 'features/admin/presentation/vehicle_access_traceability.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -30,9 +31,12 @@ class SGAVApp extends StatelessWidget {
     '/guard':   (_) => const GuardPanel(),
     '/resident':(_) => const ResidentHome(), 
     '/add':     (_) => const AddVehiclePage(),
+    '/add-user': (_) => const AddUserPage(),
     '/vehicles-admin': (_) => const VehiclesTablePage(ownerId: ''), 
+    '/vehicle-access-traceability': (_) => const VehicleAccessTraceabilityPage(),
     '/admin':     (_) => const AdminHome(),   
     '/users':     (_) => const UsersTablePage(),  
+
   },
 );
 

@@ -29,6 +29,7 @@ class UsersTablePage extends StatelessWidget {
                         DataColumn(label: Text('Email')),
                         DataColumn(label: Text('Rol')),
                         DataColumn(label: Text('Acción')),
+                        DataColumn(label: Text('Eliminar')),
                       ],
                       rows: docs.map((d) {
                         final data = d.data()! as Map<String, dynamic>;
@@ -42,6 +43,13 @@ class UsersTablePage extends StatelessWidget {
                               icon: const Icon(Icons.edit, size: 18),
                               tooltip: 'Cambiar rol',
                               onPressed: () => _showRoleDialog(context, d.id, role),
+                            ),
+                          ),
+                          DataCell(
+                            IconButton(
+                              icon: const Icon(Icons.delete, size: 18, color: Colors.red),
+                              tooltip: 'Eliminar usuario',
+                              onPressed: () => _confirmDeleteUser(context, d.id),
                             ),
                           ),
                         ]);
@@ -80,6 +88,35 @@ class UsersTablePage extends StatelessWidget {
               // ignore: use_build_context_synchronously
               ScaffoldMessenger.of(ctx).showSnackBar(
                 SnackBar(content: Text('Rol actualizado a "$selected"')),
+              );
+              // ignore: use_build_context_synchronously
+              Navigator.pop(ctx);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmDeleteUser(BuildContext ctx, String uid) {
+    showDialog(
+      context: ctx,
+      builder: (_) => AlertDialog(
+        title: const Text('Confirmar eliminación'),
+        content: const Text('¿Estás seguro de que quieres eliminar este usuario? Esta acción no se puede deshacer.'),
+        actions: [
+          TextButton(
+            child: const Text('Cancelar'),
+            onPressed: () => Navigator.pop(ctx),
+          ),
+          ElevatedButton(
+            child: const Text('Eliminar'),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () async {
+              await FirebaseFirestore.instance.collection('users').doc(uid).delete();
+              // ignore: use_build_context_synchronously
+              ScaffoldMessenger.of(ctx).showSnackBar(
+                const SnackBar(content: Text('Usuario eliminado')),
               );
               // ignore: use_build_context_synchronously
               Navigator.pop(ctx);
