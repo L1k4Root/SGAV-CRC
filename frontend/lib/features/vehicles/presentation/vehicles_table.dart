@@ -3,11 +3,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:data_table_2/data_table_2.dart';
 
-import '../../../shared/repositories/vehicles_repository.dart';
+import '../repositories/vehicles_repository.dart';
 
 class VehiclesTablePage extends StatefulWidget {
-  final String ownerId;
-  const VehiclesTablePage({super.key, required this.ownerId});
   final String ownerId;
   const VehiclesTablePage({super.key, required this.ownerId});
   @override
@@ -22,18 +20,11 @@ class _VehiclesTablePageState extends State<VehiclesTablePage> {
   Widget build(BuildContext context) {
     final isAdmin = ModalRoute.of(context)?.settings.name == '/vehicles-admin';
   @override
-  Widget build(BuildContext context) {
-    final isAdmin = ModalRoute.of(context)?.settings.name == '/vehicles-admin';
-  @override
   void dispose() {
     _search.dispose();
     super.dispose();
   }
 
-    final query = isAdmin
-        ? FirebaseFirestore.instance.collection('vehicles').orderBy('createdAt')
-        : FirebaseFirestore.instance.collection('vehicles')
-            .where('ownerId', isEqualTo: widget.ownerId);
     final query = isAdmin
         ? FirebaseFirestore.instance.collection('vehicles').orderBy('createdAt')
         : FirebaseFirestore.instance.collection('vehicles')
@@ -157,18 +148,17 @@ class _VehiclesDataTableState extends State<_VehiclesDataTable> {
                   color: active ? Colors.green[800] : Colors.red[800],
                   fontWeight: FontWeight.w500)),
         )),
-        if (!isAdmin)
-          DataCell(
-            IconButton(
-              icon: Icon(
-                active ? Icons.block : Icons.check_circle,
-                size: 18,
-                color: active ? Colors.red : Colors.green,
-              ),
-              tooltip: active ? 'Desactivar' : 'Reactivar',
-              onPressed: () => _toggleActive(d.id, active),
+        DataCell(
+          IconButton(
+            icon: Icon(
+              active ? Icons.block : Icons.check_circle,
+              size: 18,
+              color: active ? Colors.red : Colors.green,
             ),
+            tooltip: active ? 'Desactivar' : 'Reactivar',
+            onPressed: () => _toggleActive(d.id, active),
           ),
+        ),
         DataCell(
           IconButton(
             icon: const Icon(Icons.delete, color: Colors.red),
@@ -210,8 +200,7 @@ class _VehiclesDataTableState extends State<_VehiclesDataTable> {
       const DataColumn2(label: Text('Modelo'),  size: ColumnSize.M),
       const DataColumn2(label: Text('Color'),   size: ColumnSize.M),
       const DataColumn2(label: Text('Estado'),  size: ColumnSize.S),
-      if (!isAdmin)
-        const DataColumn2(label: Text('Acción'), size: ColumnSize.S),
+      const DataColumn2(label: Text('Acción'), size: ColumnSize.S),
       const DataColumn2(label: Text('Eliminar'), size: ColumnSize.S),
     ];
 

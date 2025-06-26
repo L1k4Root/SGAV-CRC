@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../../shared/repositories/vehicles_repository.dart';
+import '../repositories/vehicles_repository.dart';
 import '../../../shared/models/vehicles.dto.dart';
 import '../../../../widgets/vehicle_form.dart';
 
@@ -37,6 +37,19 @@ class _InviteVehicleFormState extends State<InviteVehicleForm> {
           submitLabel: 'Guardar invitación',
           onSubmit: (VehicleDto dto) async {
             setState(() { _loading = true; });
+
+            // 🚫 Verifica si la patente ya existe
+            final exists = await _repo.getByPlate(dto.plate);
+            if (exists != null) {
+              setState(() { _loading = false; });
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Esta patente ya está registrada')),
+                );
+              }
+              return;
+            }
+
             await _repo.addVehicle(dto);
             setState(() { _loading = false; });
             if (mounted) Navigator.pop(context);

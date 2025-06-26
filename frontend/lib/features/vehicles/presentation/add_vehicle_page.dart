@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import '../../../shared/repositories/vehicles_repository.dart';
+import '../repositories/vehicles_repository.dart';
 import '../../../shared/models/vehicles.dto.dart';
 import '../../../../widgets/vehicle_form.dart';
 
@@ -38,6 +38,17 @@ class _AddVehiclePageState extends State<AddVehiclePage> {
                   submitLabel: 'Guardar',
                   onSubmit: (VehicleDto dto) async {
                     setState(() { _loading = true; _msg = null; });
+
+                    // 🚫 Verifica si la patente ya existe
+                    final exists = await _repo.getByPlate(dto.plate);
+                    if (exists != null) {
+                      setState(() {
+                        _loading = false;
+                        _msg = 'La patente ya está registrada';
+                      });
+                      return;
+                    }
+
                     await _repo.addVehicle(dto);
                     setState(() {
                       _loading = false;

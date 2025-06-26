@@ -1,7 +1,5 @@
-
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/vehicles.dto.dart';
+import '../../../shared/models/vehicles.dto.dart';
 
 /// Repository wrapper around the `vehicles` collection in Firestore.
 ///
