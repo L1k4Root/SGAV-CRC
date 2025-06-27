@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:sgav_frontend/shared/utils/loggin_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -17,39 +18,52 @@ class _LoginPageState extends State<LoginPage> {
   String? _error;
 
   Future<void> _signIn() async {
-  setState(() => _loading = true);
-  try {
-    await FirebaseAuth.instance.signInWithEmailAndPassword(
-      email: _email.text.trim(),
-      password: _pass.text.trim(),
-    );
+    setState(() => _loading = true);
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _email.text.trim(),
+        password: _pass.text.trim(),
+      );
+      await LoggingService.info(
+        module: 'auth',
+        event: 'login_success',
+        uid: FirebaseAuth.instance.currentUser!.uid,
+        payload: {'email': _email.text.trim()},
+      );
+      // 1. Traer rol desde Firestore
+      final uid  = FirebaseAuth.instance.currentUser!.uid;
+      final doc  = await FirebaseFirestore.instance
+          .collection('users').doc(uid).get();
+      final role = doc.data()?['role'] as String? ?? 'resident';
 
-    // 1. Traer rol desde Firestore
-    final uid  = FirebaseAuth.instance.currentUser!.uid;
-    final doc  = await FirebaseFirestore.instance
-        .collection('users').doc(uid).get();
-    final role = doc.data()?['role'] as String? ?? 'resident';
+      if (!mounted) return;
 
-    if (!mounted) return;
-
-    // 2. Redirigir según rol
-    switch (role) {
-      case 'guard':
-        Navigator.pushReplacementNamed(context, '/guard');
-        break;
-      case 'admin':
-        Navigator.pushReplacementNamed(context, '/admin');
-        break;
-      case 'resident':
-      default:
-        Navigator.pushReplacementNamed(context, '/resident');
+      // 2. Redirigir según rol
+      switch (role) {
+        case 'guard':
+          Navigator.pushReplacementNamed(context, '/guard');
+          break;
+        case 'admin':
+          Navigator.pushReplacementNamed(context, '/admin');
+          break;
+        case 'resident':
+        default:
+          Navigator.pushReplacementNamed(context, '/resident');
+      }
+    } on FirebaseAuthException catch (e) {
+      await LoggingService.warning(
+        module: 'auth',
+        event: 'login_failed',
+        payload: {
+          'code': e.code,
+          'email': _email.text.trim(),
+        },
+      );
+      setState(() => _error = e.message);
+    } finally {
+      setState(() => _loading = false);
     }
-  } on FirebaseAuthException catch (e) {
-    setState(() => _error = e.message);
-  } finally {
-    setState(() => _loading = false);
   }
-}
 
 
 // Botones rápidos de autologin (solo en modo debug)

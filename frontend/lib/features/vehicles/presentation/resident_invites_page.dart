@@ -25,7 +25,18 @@ class _ResidentInvitesPageState extends State<ResidentInvitesPage> {
         .where('active', isEqualTo: true)
         .get();
 
-    return snapshot.docs.map((doc) => doc.data()).toList();
+    return snapshot.docs.map((doc) {
+      final data = doc.data();
+      data['id'] = doc.id;
+      return data;
+    }).toList();
+  }
+
+  Future<void> _deleteInvite(String id) async {
+    await FirebaseFirestore.instance.collection('invites').doc(id).delete();
+    setState(() {
+      _invitesFuture = _fetchInvites();
+    });
   }
 
   @override
@@ -65,7 +76,38 @@ class _ResidentInvitesPageState extends State<ResidentInvitesPage> {
                       Text('Expira: ${invite['expiresOn'] != null ? DateTime.fromMillisecondsSinceEpoch(invite['expiresOn'].seconds * 1000).toLocal().toString() : 'N/A'}'),
                     ],
                   ),
-                  trailing: const Icon(Icons.directions_car),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        tooltip: 'Eliminar invitación',
+                        icon: const Icon(Icons.delete_outline),
+                        onPressed: () async {
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: const Text('Eliminar invitación'),
+                              content: const Text('¿Estás seguro de eliminar esta invitación?'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx, false),
+                                  child: const Text('Cancelar'),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx, true),
+                                  child: const Text('Eliminar'),
+                                ),
+                              ],
+                            ),
+                          );
+                          if (confirm == true) {
+                            await _deleteInvite(invite['id'] as String);
+                          }
+                        },
+                      ),
+                      const Icon(Icons.directions_car),
+                    ],
+                  ),
                 ),
               );
             },

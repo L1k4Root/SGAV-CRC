@@ -222,7 +222,7 @@ class AdminHome extends StatelessWidget {
                         ElevatedButton.icon(
                           icon: const Icon(Icons.lock),
                           label: const Text('Revisar logs'),
-                          onPressed: null, // Placeholder
+                          onPressed: () => Navigator.pushNamed(context, '/system-logs'),
                         ),
                         const SizedBox(height: 6),
                         ElevatedButton.icon(

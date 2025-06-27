@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../repositories/vehicles_repository.dart';
 import '../../../shared/models/vehicles.dto.dart';
-import '../../../../widgets/vehicle_form.dart';
+import '../widgets/vehicle_form.dart';
 import '../services/vehicle_service.dart';
 
 /// Formulario para que el residente invite un vehículo temporal o permanente.

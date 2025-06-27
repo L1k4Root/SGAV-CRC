@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../repositories/vehicles_repository.dart';
-import '../../../shared/models/vehicles.dto.dart';
-import 'invite_vehicle_form.dart';
 import 'vehicles_table.dart';
-import 'package:sgav_frontend/widgets/logout_button.dart';
+import 'package:sgav_frontend/shared/widgets/logout_button.dart';
 import 'resident_invites_page.dart';
 
 /// Home del residente: lista sus vehículos e invita nuevos.
@@ -25,7 +21,7 @@ class ResidentHome extends StatelessWidget {
             icon: const Icon(Icons.report),
             tooltip: 'Reportar incidente',
             onPressed: () {
-              Navigator.pushNamed(context, '/report-incident');
+              Navigator.pushNamed(context, '/incidents');
             },
           ),
           IconButton(

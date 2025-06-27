@@ -1,8 +1,8 @@
 
 
 import 'package:flutter/material.dart';
-import '../shared/models/vehicles.dto.dart';
-import '../shared/utils/validators.dart';
+import '../../../shared/models/vehicles.dto.dart';
+import '../../../shared/utils/validators.dart';
 
 /// Callback with the completed [VehicleDto] when the form is submitted.
 typedef VehicleFormCallback = void Function(VehicleDto dto);

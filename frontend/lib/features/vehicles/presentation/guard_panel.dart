@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart'; // for kDebugMode & debugPrint
 import 'package:sgav_frontend/shared/widgets/logout_button.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../features/users/presentation/incidents_page.dart';
 
 import '../../../shared/models/access_log.dart';
 import '../../../shared/services/api_client.dart';
@@ -32,7 +34,7 @@ class TrafficLight extends StatelessWidget {
     final text = switch (state) {
       TrafficLightState.green  => 'AUTORIZADO',
       TrafficLightState.red    => 'NO REGISTRADO',
-      TrafficLightState.yellow => 'DESACTIVADO',
+      TrafficLightState.yellow => 'EXPIRADO',
       _                        => '—',
     };
     return AnimatedContainer(
@@ -126,6 +128,8 @@ class _GuardPanelState extends State<GuardPanel> {
                 timestamp: now,
                 guardId: FirebaseAuth.instance.currentUser!.uid,
                 description: _obsController.text.trim(),
+                ownerEmail: _vehicleInfo?['ownerEmail'] ?? '',
+                ownerId: _vehicleInfo?['ownerId'] ?? '',
               );
               Navigator.pop(dialogContext);
               ScaffoldMessenger.of(context).showSnackBar(
@@ -152,6 +156,33 @@ class _GuardPanelState extends State<GuardPanel> {
       _lightState = TrafficLightState.idle;
     });
     final plate = plateInput.toUpperCase();
+
+    // Verificar invitaciones válidas
+    final now = DateTime.now();
+    final inviteSnapAll = await FirebaseFirestore.instance
+        .collection('invites')
+        .where('plate', isEqualTo: plate)
+        .where('active', isEqualTo: true)
+        .get();
+    if (inviteSnapAll.docs.isNotEmpty) {
+      final invite = inviteSnapAll.docs.first.data();
+      final expiresOn = (invite['expiresOn'] as Timestamp?)?.toDate();
+      bool isExpired = expiresOn != null && expiresOn.isBefore(now);
+      setState(() {
+        _vehicleInfo = {
+          'model': invite['model'] ?? '',
+          'color': invite['color'] ?? '',
+          'ownerEmail': invite['ownerEmail'] ?? '',
+          'active': !isExpired,
+        };
+        _lightState = isExpired
+            ? TrafficLightState.yellow  // Expirado
+            : TrafficLightState.green;  // Autorizado por invitación
+        _loading = false;
+      });
+      return;
+    }
+
     final data = await _api.getVehicle(plate);
     if (kDebugMode) {
       debugPrint('DEBUG ▸ Fetched data for $plate → $data');

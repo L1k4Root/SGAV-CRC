@@ -10,13 +10,17 @@ class IncidentRepository {
     required String plate,
     required DateTime timestamp,
     required String guardId,
-    required String description,
+    required String description, 
+    required String ownerEmail,
+    required String ownerId,
   }) {
     final data = {
-      'plate': plate,
-      'timestamp': Timestamp.fromDate(timestamp),
-      'guardId': guardId,
-      'description': description,
+      'plate'       : plate,
+      'timestamp'   : Timestamp.fromDate(timestamp),
+      'guardId'     : guardId,
+      'description' : description,
+      'ownerEmail'  : ownerEmail,
+      'ownerId'     : ownerId,
     };
     return _col.add(data);
   }
