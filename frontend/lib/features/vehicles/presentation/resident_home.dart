@@ -7,6 +7,7 @@ import '../../../shared/models/vehicles.dto.dart';
 import 'invite_vehicle_form.dart';
 import 'vehicles_table.dart';
 import 'package:sgav_frontend/widgets/logout_button.dart';
+import 'resident_invites_page.dart';
 
 /// Home del residente: lista sus vehículos e invita nuevos.
 class ResidentHome extends StatelessWidget {
@@ -27,23 +28,25 @@ class ResidentHome extends StatelessWidget {
               Navigator.pushNamed(context, '/report-incident');
             },
           ),
+          IconButton(
+            icon: const Icon(Icons.mail),
+            tooltip: 'Ver invitaciones',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ResidentInvitesPage()),
+              );
+            },
+          ),
           const LogoutButton(),
         ],
       ),
       body: VehiclesTablePage(ownerId: uid),
       floatingActionButton: FloatingActionButton(
-        tooltip: 'Invitar vehículo',
+        tooltip: 'Añadir vehículo',
         child: const Icon(Icons.add),
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => InviteVehicleForm(
-                ownerId: uid,
-                ownerEmail: FirebaseAuth.instance.currentUser!.email!,
-              ),
-            ),
-          );
+          Navigator.pushNamed(context, '/add');
         },
       ),
     );

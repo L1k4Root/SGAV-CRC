@@ -52,36 +52,6 @@ class _LoginPageState extends State<LoginPage> {
 }
 
 
-// Register
-  Future<void> _register() async {
-  setState(() => _loading = true);
-  try {
-    // 1. Crea el usuario en Firebase Auth
-    final cred = await FirebaseAuth.instance
-        .createUserWithEmailAndPassword(
-            email: _email.text.trim(), password: _pass.text.trim());
-
-    // 2. Guarda su rol en Firestore (por defecto 'resident', o 'admin' si el correo es admin@sgav.com)
-    final email = cred.user!.email;
-    final role = email == 'admin@sgav.com' ? 'admin' : 'resident';
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(cred.user!.uid)
-        .set({
-          'email': email,
-          'role': role,
-        });
-
-    if (!mounted) return;
-    // 3. Redirige a la vista del residente
-    Navigator.pushReplacementNamed(context, '/resident');
-  } on FirebaseAuthException catch (e) {
-    setState(() => _error = e.message);
-  } finally {
-    setState(() => _loading = false);
-  }
-}
-
 // Botones rápidos de autologin (solo en modo debug)
 Widget _quickLoginButtons() {
   if (!kDebugMode) return const SizedBox.shrink();
@@ -168,7 +138,7 @@ Widget _quickLoginButtons() {
                               child: const Text('Ingresar'),
                             ),
                             TextButton(
-                              onPressed: _register,
+                              onPressed: () => Navigator.pushNamed(context, '/register'),
                               child: const Text('Crear cuenta'),
                             ),
                           ],

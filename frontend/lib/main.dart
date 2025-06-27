@@ -12,6 +12,9 @@ import 'features/vehicles/presentation/guard_panel.dart';
 import 'features/vehicles/presentation/add_vehicle_page.dart';
 import 'features/admin/presentation/add_user.dart';
 import 'features/admin/presentation/vehicle_access_traceability.dart';
+import 'features/auth/presentation/register_page.dart';
+import 'features/admin/presentation/access_log_bitacory.dart';
+import 'features/dashboard/presentation/admin_dashboard_page.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -36,6 +39,10 @@ class SGAVApp extends StatelessWidget {
     '/vehicle-access-traceability': (_) => const VehicleAccessTraceabilityPage(),
     '/admin':     (_) => const AdminHome(),   
     '/users':     (_) => const UsersTablePage(),  
+    '/register': (_) => const RegisterPage(),
+    '/access-log': (_) => const AccessLogBitacoryPage(),
+  '/dashboards': (_) => const AdminDashboardPage(),
+
 
   },
 );
