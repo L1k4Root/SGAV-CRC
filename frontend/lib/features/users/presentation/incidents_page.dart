@@ -9,6 +9,9 @@ class IncidentsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final bool isAdmin = args?['isAdmin'] ?? false;
+
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       return const Scaffold(
@@ -19,14 +22,17 @@ class IncidentsPage extends StatelessWidget {
     final uid = user.uid;
     final email = user.email;
 
+    Query<Map<String, dynamic>> query = FirebaseFirestore.instance
+        .collection('incidents');
+    if (!isAdmin) {
+      query = query.where('ownerId', isEqualTo: uid);
+    }
+    query = query.orderBy('timestamp', descending: true);
+
     return Scaffold(
       appBar: AppBar(title: const Text('Mis incidentes')),
       body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: FirebaseFirestore.instance
-            .collection('incidents')
-            .where('ownerId', isEqualTo: uid)
-            .orderBy('timestamp', descending: true)
-            .snapshots(),
+        stream: query.snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -52,13 +58,13 @@ class IncidentsPage extends StatelessWidget {
             final t2 = (b['timestamp'] as Timestamp?)?.toDate() ?? DateTime.fromMillisecondsSinceEpoch(0);
             return t2.compareTo(t1);
           });
-          return _buildList(docs);
+          return _buildList(docs, isAdmin);
         },
       ),
     );
   }
 
-  Widget _buildList(List<QueryDocumentSnapshot<Map<String, dynamic>>> docs) {
+  Widget _buildList(List<QueryDocumentSnapshot<Map<String, dynamic>>> docs, bool isAdmin) {
     if (docs.isEmpty) {
       return const Center(child: Text('No tienes incidentes registrados.'));
     }
@@ -71,7 +77,30 @@ class IncidentsPage extends StatelessWidget {
         return ListTile(
           leading: const Icon(Icons.report_problem, color: Colors.orange),
           title: Text(data['plate'] ?? '—'),
-          subtitle: Text(data['description'] ?? 'Sin descripción'),
+          subtitle: isAdmin
+              ? FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                  future: FirebaseFirestore.instance.collection('users').doc(data['ownerId']).get(),
+                  builder: (context, userSnap) {
+                    final email =
+                        userSnap.data?.data()?['email'] ?? data['ownerId'];
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(data['description'] ?? 'Sin descripción'),
+                        Text(
+                          'Usuario: $email',
+                          style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+                        ),
+                      ],
+                    );
+                  },
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(data['description'] ?? 'Sin descripción'),
+                  ],
+                ),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [

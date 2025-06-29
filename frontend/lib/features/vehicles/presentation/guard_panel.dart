@@ -272,7 +272,7 @@ class _GuardPanelState extends State<GuardPanel> {
                             onPressed: () async {
                               final scannedPlate = await Navigator.push<String?>(
                                 context,
-                                MaterialPageRoute(builder: (_) => const QRScannerPage()),
+                                MaterialPageRoute(builder: (_) => const PlateScannerPage()),
                               );
                               if (scannedPlate != null) {
                                 _plate.text = scannedPlate;

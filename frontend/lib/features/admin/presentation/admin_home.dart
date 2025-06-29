@@ -3,7 +3,6 @@ import 'package:sgav_frontend/shared/widgets/logout_button.dart';
 import 'package:sgav_frontend/features/vehicles/presentation/add_vehicle_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:pdf/pdf.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:open_file/open_file.dart';
@@ -228,7 +227,11 @@ class AdminHome extends StatelessWidget {
                         ElevatedButton.icon(
                           icon: const Icon(Icons.support_agent),
                           label: const Text('Soporte a usuarios'),
-                          onPressed: null, // Placeholder
+                          onPressed: () => Navigator.pushNamed(
+                            context,
+                            '/incidents',
+                            arguments: {'isAdmin': true},
+                          ),
                         ),
                         const SizedBox(height: 6),
                       ],
