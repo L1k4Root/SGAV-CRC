@@ -28,6 +28,7 @@ class UsersTablePage extends StatelessWidget {
                       columns: const [
                         DataColumn(label: Text('Email')),
                         DataColumn(label: Text('Rol')),
+                        DataColumn(label: Text('Bloquear')),
                         DataColumn(label: Text('Acción')),
                         DataColumn(label: Text('Eliminar')),
                       ],
@@ -40,14 +41,37 @@ class UsersTablePage extends StatelessWidget {
                           DataCell(Text(role)),
                           DataCell(
                             IconButton(
-                              icon: const Icon(Icons.edit, size: 18),
-                              tooltip: 'Cambiar rol',
-                              onPressed: () => _showRoleDialog(context, d.id, role),
+                              icon: Icon(
+                                (data['block'] as bool? ?? false)
+                                    ? Icons.lock
+                                    : Icons.lock_open,
+                                size: 18,
+                                color: (data['block'] as bool? ?? false)
+                                    ? Colors.red
+                                    : Colors.green,
+                              ),
+                              tooltip: (data['block'] as bool? ?? false)
+                                  ? 'Desbloquear usuario'
+                                  : 'Bloquear usuario',
+                              onPressed: () => _toggleBlock(
+                                context,
+                                d.id,
+                                data['block'] as bool? ?? false,
+                              ),
                             ),
                           ),
                           DataCell(
                             IconButton(
-                              icon: const Icon(Icons.delete, size: 18, color: Colors.red),
+                              icon: const Icon(Icons.edit, size: 18),
+                              tooltip: 'Cambiar rol',
+                              onPressed: () =>
+                                  _showRoleDialog(context, d.id, role),
+                            ),
+                          ),
+                          DataCell(
+                            IconButton(
+                              icon: const Icon(Icons.delete,
+                                  size: 18, color: Colors.red),
                               tooltip: 'Eliminar usuario',
                               onPressed: () => _confirmDeleteUser(context, d.id),
                             ),
@@ -123,6 +147,21 @@ class UsersTablePage extends StatelessWidget {
             },
           ),
         ],
+      ),
+    );
+  }
+
+  void _toggleBlock(BuildContext ctx, String uid, bool currentlyBlocked) async {
+    final newValue = !currentlyBlocked;
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .update({'block': newValue});
+    ScaffoldMessenger.of(ctx).showSnackBar(
+      SnackBar(
+        content: Text(
+          newValue ? 'Usuario bloqueado' : 'Usuario desbloqueado',
+        ),
       ),
     );
   }

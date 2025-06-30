@@ -2,10 +2,9 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+import '../../users/data/user_repository.dart';
 
 class AddUserPage extends StatefulWidget {
   const AddUserPage({super.key});
@@ -77,37 +76,16 @@ class _AddUserPageState extends State<AddUserPage> {
     setState(() => _loading = true);
 
     try {
-      // 1. Crear cuenta en Firebase Auth
-      final authResult = await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(
-              email: _emailCtrl.text.trim(),
-              password: _pwdCtrl.text.trim());
-
-      final uid = authResult.user!.uid;
-
-      String? photoURL;
-      if (_avatarFile != null) {
-        final ref = FirebaseStorage.instance.ref('user_avatars/$uid.jpg');
-        if (kIsWeb && _avatarBytes != null) {
-          await ref.putData(_avatarBytes!);
-        } else {
-          await ref.putData(await _avatarFile!.readAsBytes());
-        }
-        photoURL = await ref.getDownloadURL();
-      }
-
-      // 2. Registrar documento en Firestore
-      await FirebaseFirestore.instance.collection('users').doc(uid).set({
-        'uid': uid,
-        'email': _emailCtrl.text.trim(),
-        'fullName': _nameCtrl.text.trim(),
-        'role': _selectedRole,
-        'inactive': false,
-        'createdAt': FieldValue.serverTimestamp(),
-        'phone': _phoneCtrl.text.trim(),
-        if (photoURL != null) 'photoURL': photoURL,
-      });
-
+      final repo = UserRepository();
+      await repo.registerNewUser(
+        fullName: _nameCtrl.text.trim(),
+        email: _emailCtrl.text.trim(),
+        password: _pwdCtrl.text.trim(),
+        role: _selectedRole,
+        block: false,
+        phone: _phoneCtrl.text.trim().isEmpty ? null : _phoneCtrl.text.trim(),
+        avatarBytes: _avatarBytes,
+      );
       if (mounted) {
         _quickSnack('Usuario creado correctamente');
         Navigator.pop(context);

@@ -123,13 +123,27 @@ class _GuardPanelState extends State<GuardPanel> {
             onPressed: () async {
               final plate = _plate.text.trim().toUpperCase();
               final now = DateTime.now();
+              // Determine ownerId: use provided or lookup from vehicles collection
+              String ownerEmail = _vehicleInfo?['ownerEmail'] ?? '';
+              String ownerId = _vehicleInfo?['ownerId'] ?? '';
+              if (ownerId.isEmpty && ownerEmail.isNotEmpty) {
+                final vehicleQuery = await FirebaseFirestore.instance
+                    .collection('vehicles')
+                    .where('ownerEmail', isEqualTo: ownerEmail)
+                    .limit(1)
+                    .get();
+                if (vehicleQuery.docs.isNotEmpty) {
+                  final data = vehicleQuery.docs.first.data();
+                  ownerId = data['ownerId'] as String? ?? '';
+                }
+              }
               await _incidentRepo.registerIncident(
                 plate: plate,
                 timestamp: now,
                 guardId: FirebaseAuth.instance.currentUser!.uid,
                 description: _obsController.text.trim(),
-                ownerEmail: _vehicleInfo?['ownerEmail'] ?? '',
-                ownerId: _vehicleInfo?['ownerId'] ?? '',
+                ownerEmail: ownerEmail,
+                ownerId: ownerId,
               );
               Navigator.pop(dialogContext);
               ScaffoldMessenger.of(context).showSnackBar(

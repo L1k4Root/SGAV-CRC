@@ -2,7 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
-import 'package:sgav_frontend/shared/utils/loggin_service.dart';
+
+import '../../../shared/utils/loggin_service.dart';
+
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -35,6 +37,22 @@ class _LoginPageState extends State<LoginPage> {
       final doc  = await FirebaseFirestore.instance
           .collection('users').doc(uid).get();
       final role = doc.data()?['role'] as String? ?? 'resident';
+      // Check if user is blocked
+      final data = doc.data() ?? {};
+      final isBlocked = data['block'] as bool? ?? false;
+      if (isBlocked) {
+        await LoggingService.warning(
+          module: 'auth',
+          event: 'login_blocked',
+          uid: uid,
+          payload: {'email': _email.text.trim()},
+        );
+        setState(() {
+          _error = 'Usuario bloqueado. Contacta al administrador.';
+          _loading = false;
+        });
+        return;
+      }
 
       if (!mounted) return;
 

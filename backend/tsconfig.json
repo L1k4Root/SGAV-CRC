@@ -21,7 +21,10 @@
     "allowJs": true // added option
   },
   "include": [
-    "scripts/fixVehiclesActive.mjs" // added file
-    // other included files or folders
+    "scripts/**/*.ts", // Include all TypeScript files in the scripts folder
+    "src/**/*.ts" // Include all TypeScript files in the src folder
+  ],
+  "exclude": [
+    "dist" // Exclude the dist folder
   ]
 }

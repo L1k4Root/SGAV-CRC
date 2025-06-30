@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import '../../users/data/user_repository.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -23,28 +25,20 @@ class _RegisterPageState extends State<RegisterPage> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
     try {
-      final cred = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      final repo = UserRepository();
+      // Register user and send verification
+      await repo.registerNewUser(
+        fullName: _name.text.trim(),
         email: _email.text.trim(),
         password: _pwd.text.trim(),
+        role: 'resident',
+        // new users are not blocked by default
+        block: false,
       );
-
-      // Doc inicial en Firestore con rol residente inactivo
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(cred.user!.uid)
-          .set({
-        'fullName': _name.text.trim(),
-        'email': _email.text.trim(),
-        'role': 'resident',
-        'inactive': true,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
-
-      await cred.user!.sendEmailVerification();
       if (!mounted) return;
-      Navigator.pop(context); // vuelve al login con mensaje
+      Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Revisa tu correo para verificar tu cuenta'),
+        content: Text('Cuenta creada correctamente'),
         duration: Duration(seconds: 2),
       ));
     } on FirebaseAuthException catch (e) {

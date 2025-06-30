@@ -4,8 +4,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 
-class IncidentsPage extends StatelessWidget {
+class IncidentsPage extends StatefulWidget {
   const IncidentsPage({super.key});
+
+  @override
+  State<IncidentsPage> createState() => _IncidentsPageState();
+}
+
+class _IncidentsPageState extends State<IncidentsPage> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
 
   @override
   Widget build(BuildContext context) {
@@ -22,44 +30,77 @@ class IncidentsPage extends StatelessWidget {
     final uid = user.uid;
     final email = user.email;
 
+    // Always load all incidents ordered by timestamp, then filter locally for residents
     Query<Map<String, dynamic>> query = FirebaseFirestore.instance
-        .collection('incidents');
-    if (!isAdmin) {
-      query = query.where('ownerId', isEqualTo: uid);
-    }
-    query = query.orderBy('timestamp', descending: true);
+        .collection('incidents')
+        .orderBy('timestamp', descending: true);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Mis incidentes')),
-      body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: query.snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text(
-                  'Error cargando incidentes.\n'
-                  'Es posible que necesites crear un índice compuesto en Firestore:\n'
-                  'Collection: incidents\n'
-                  'Fields: ownerId (ASCENDING), timestamp (DESCENDING)',
-                  textAlign: TextAlign.center,
-                ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: _searchController,
+              decoration: const InputDecoration(
+                labelText: 'Buscar por patente',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(),
               ),
-            );
-          }
-          var docs = snapshot.data?.docs ?? [];
-          // Aseguramos orden local si Firestore devuelve sin orderBy
-          docs.sort((a, b) {
-            final t1 = (a['timestamp'] as Timestamp?)?.toDate() ?? DateTime.fromMillisecondsSinceEpoch(0);
-            final t2 = (b['timestamp'] as Timestamp?)?.toDate() ?? DateTime.fromMillisecondsSinceEpoch(0);
-            return t2.compareTo(t1);
-          });
-          return _buildList(docs, isAdmin);
-        },
+              onChanged: (val) => setState(() {
+                _searchQuery = val.trim().toUpperCase();
+              }),
+            ),
+          ),
+          Expanded(
+            child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+              stream: query.snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        'Error cargando incidentes.\n'
+                        'Es posible que necesites crear un índice compuesto en Firestore:\n'
+                        'Collection: incidents\n'
+                        'Fields: ownerId (ASCENDING), timestamp (DESCENDING)',
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  );
+                }
+                var docs = snapshot.data?.docs ?? [];
+                // Filtrar por patente si hay texto de búsqueda
+                if (_searchQuery.isNotEmpty) {
+                  docs = docs.where((doc) {
+                    final plate = (doc.data()['plate'] as String?)?.toUpperCase() ?? '';
+                    return plate.contains(_searchQuery);
+                  }).toList();
+                }
+                // Filter locally for resident users
+                if (!isAdmin) {
+                  docs = docs.where((doc) {
+                    final data = doc.data();
+                    final ownerId = data['ownerId'];
+                    return ownerId != null && ownerId is String && ownerId == uid;
+                  }).toList();
+                }
+                // Aseguramos orden local si Firestore devuelve sin orderBy
+                docs.sort((a, b) {
+                  final t1 = (a['timestamp'] as Timestamp?)?.toDate() ?? DateTime.fromMillisecondsSinceEpoch(0);
+                  final t2 = (b['timestamp'] as Timestamp?)?.toDate() ?? DateTime.fromMillisecondsSinceEpoch(0);
+                  return t2.compareTo(t1);
+                });
+                return _buildList(docs, isAdmin);
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -77,30 +118,39 @@ class IncidentsPage extends StatelessWidget {
         return ListTile(
           leading: const Icon(Icons.report_problem, color: Colors.orange),
           title: Text(data['plate'] ?? '—'),
-          subtitle: isAdmin
-              ? FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                  future: FirebaseFirestore.instance.collection('users').doc(data['ownerId']).get(),
-                  builder: (context, userSnap) {
-                    final email =
-                        userSnap.data?.data()?['email'] ?? data['ownerId'];
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(data['description'] ?? 'Sin descripción'),
-                        Text(
-                          'Usuario: $email',
-                          style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
-                        ),
-                      ],
-                    );
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(data['description'] ?? 'Sin descripción'),
+              if (isAdmin) ...[
+                Builder(
+                  builder: (context) {
+                    final ownerId = data['ownerId'] as String? ?? '';
+                    final ownerEmail = data['ownerEmail'] as String? ?? '';
+                    if (ownerId.isNotEmpty) {
+                      return FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                        future: FirebaseFirestore.instance.collection('users').doc(ownerId).get(),
+                        builder: (context, userSnap) {
+                          final email = userSnap.data?.data()?['email'] ?? ownerEmail;
+                          return Text(
+                            'Usuario: $email',
+                            style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+                          );
+                        },
+                      );
+                    } else if (ownerEmail.isNotEmpty) {
+                      return Text(
+                        'Usuario: $ownerEmail',
+                        style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+                      );
+                    } else {
+                      return const SizedBox.shrink();
+                    }
                   },
-                )
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(data['description'] ?? 'Sin descripción'),
-                  ],
                 ),
+              ],
+            ],
+          ),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
