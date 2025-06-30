@@ -6,9 +6,17 @@ import { UsersModule } from './users/users.module';
 import { VehiclesModule } from './vehicles/vehicles.module';
 import { AccessModule } from './access/access.module';
 import { IncidentsModule } from './incidents/incidents.module';
+import { PlateScanModule } from './plate-scan/plate-scan.module';
 
 @Module({
-  imports: [AuthModule, UsersModule, VehiclesModule, AccessModule, IncidentsModule],
+  imports: [
+    AuthModule,
+    UsersModule,
+    VehiclesModule,
+    AccessModule,
+    IncidentsModule,
+    PlateScanModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
