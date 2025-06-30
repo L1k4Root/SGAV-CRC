@@ -101,44 +101,64 @@ class _PlateScannerPageState extends State<PlateScannerPage> {
       appBar: AppBar(title: const Text('Escanear Patente')),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            ElevatedButton.icon(
-              onPressed: _pickImage,
-              icon: const Icon(Icons.photo_library),
-              label: const Text('Seleccionar imagen'),
-            ),
-            const SizedBox(height: 16),
-            if (_selectedBytes != null)
-              Image.memory(_selectedBytes!, height: 200),
-            if (_selectedBytes == null && _selectedImage != null)
-              Image.file(_selectedImage!, height: 200),
-            if (_selectedImage != null || _selectedBytes != null) ...[
-              const SizedBox(height: 16),
-              ElevatedButton.icon(
-                onPressed: _isLoading ? null : _scanPlate,
-                icon: const Icon(Icons.camera_alt),
-                label: _isLoading
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Text('Escanear'),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 24),
+              Center(
+                child: ElevatedButton.icon(
+                  onPressed: _pickImage,
+                  icon: const Icon(Icons.photo_library),
+                  label: const Text('Seleccionar imagen'),
+                ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
+              if (_selectedBytes != null || _selectedImage != null)
+                Center(
+                  child: Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    margin: const EdgeInsets.symmetric(vertical: 16),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: _selectedBytes != null
+                          ? Image.memory(_selectedBytes!, height: 200, fit: BoxFit.contain)
+                          : Image.file(_selectedImage!, height: 200, fit: BoxFit.contain),
+                    ),
+                  ),
+                ),
+              if (_selectedBytes != null || _selectedImage != null) ...[
+                const SizedBox(height: 12),
+                ElevatedButton.icon(
+                  onPressed: _isLoading ? null : _scanPlate,
+                  icon: const Icon(Icons.camera_alt),
+                  label: _isLoading
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Escanear'),
+                ),
+              ],
+              const SizedBox(height: 24),
+              if (_detectedPlate != null)
+                Text(
+                  'Patente detectada: $_detectedPlate',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                ),
+              if (_error != null) ...[
+                const SizedBox(height: 12),
+                Text(
+                  _error!,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.error),
+                ),
+              ],
+              const SizedBox(height: 24),
             ],
-            if (_detectedPlate != null)
-              Text(
-                'Patente detectada: $_detectedPlate',
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-            if (_error != null)
-              Text(
-                _error!,
-                style: const TextStyle(color: Colors.red),
-              ),
-          ],
+          ),
         ),
       ),
     );

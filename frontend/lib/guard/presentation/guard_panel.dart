@@ -25,60 +25,94 @@ class TrafficLight extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = switch (state) {
-      TrafficLightState.green  => Colors.green,
-      TrafficLightState.red    => Colors.red,
-      TrafficLightState.yellow => Colors.amber,
-      _                        => Colors.grey,
-    };
-    final text = switch (state) {
-      TrafficLightState.green  => 'AUTORIZADO',
-      TrafficLightState.red    => 'NO REGISTRADO',
-      TrafficLightState.yellow => 'EXPIRADO',
-      _                        => '—',
-    };
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 250),
-      width: 220,
-      height: 220,
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
-        shape: BoxShape.circle,
-        border: Border.all(color: color, width: 4),
-      ),
-      alignment: Alignment.center,
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          color: color,
+    final color = {
+      TrafficLightState.green: Colors.green,
+      TrafficLightState.red: Colors.red,
+      TrafficLightState.yellow: Colors.amber,
+      TrafficLightState.idle: Colors.grey,
+    }[state]!;
+
+    final text = {
+      TrafficLightState.green: 'AUTORIZADO',
+      TrafficLightState.red: 'NO REGISTRADO',
+      TrafficLightState.yellow: 'EXPIRADO',
+      TrafficLightState.idle: '—',
+    }[state]!;
+
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 600),
+      transitionBuilder: (child, animation) {
+        return ScaleTransition(
+          scale: animation,
+          child: FadeTransition(
+            opacity: animation,
+            child: child,
+          ),
+        );
+      },
+      child: Container(
+        key: ValueKey<TrafficLightState>(state),
+        width: 220,
+        height: 220,
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.15),
+          shape: BoxShape.circle,
+          border: Border.all(color: color, width: 6),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          text,
+          style: Theme.of(context)
+              .textTheme
+              .titleLarge!
+              .copyWith(color: color, fontWeight: FontWeight.bold),
         ),
       ),
     );
   }
 }
 
-/// Tarjeta con los datos del vehículo autorizado.
-class VehicleInfoCard extends StatelessWidget {
+
+class VehicleInfoCard extends StatefulWidget {
   final Map<String, dynamic> data;
   const VehicleInfoCard({required this.data, super.key});
 
   @override
+  State<VehicleInfoCard> createState() => _VehicleInfoCardState();
+}
+
+class _VehicleInfoCardState extends State<VehicleInfoCard> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 500))..forward();
+  late final Animation<double> _fade = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 2,
-      margin: const EdgeInsets.symmetric(vertical: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Modelo: ${data['model'] ?? '-'}'),
-            Text('Color : ${data['color'] ?? '-'}'),
-            Text('Residente: ${data['ownerEmail'] ?? '-'}'),
-            Text('Estado: ${data['active'] == true ? 'Activo' : 'Inactivo'}'),
-          ],
+    return FadeTransition(
+      opacity: _fade,
+      child: Card(
+        elevation: 3,
+        margin: const EdgeInsets.symmetric(vertical: 16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Modelo: ${widget.data['model'] ?? '-'}'),
+              const SizedBox(height: 4),
+              Text('Color: ${widget.data['color'] ?? '-'}'),
+              const SizedBox(height: 4),
+              Text('Residente: ${widget.data['ownerEmail'] ?? '-'}'),
+              const SizedBox(height: 4),
+              Text('Estado: ${widget.data['active'] == true ? 'Activo' : 'Inactivo'}'),
+            ],
+          ),
         ),
       ),
     );
