@@ -32,20 +32,29 @@ class SGAVApp extends StatelessWidget {
   debugShowCheckedModeBanner: false,
   initialRoute: '/',
   routes: {
-    '/':        (_) => const LoginPage(),
-    '/guard':   (_) => const GuardPanel(),
-    '/resident':(_) => const ResidentHome(), 
-    '/add':     (_) => const AddVehiclePage(),
-    '/add-user': (_) => const AddUserPage(),
-    '/vehicles-admin': (_) => const VehiclesTablePage(ownerId: ''), 
+    // Authenticacion
+    '/':                        (_) => const LoginPage(),
+    '/register':                (_) => const RegisterPage(),
+
+    // Admin Features
+    '/admin':                   (_) => const AdminHome(),
+    '/users':                   (_) => const UsersTablePage(),
+    '/add-user':                (_) => const AddUserPage(),
+    '/vehicles-admin':          (_) => const VehiclesTablePage(ownerId: 'admin'),
+    '/dashboards':              (_) => const AdminDashboardPage(),
     '/vehicle-access-traceability': (_) => const VehicleAccessTraceabilityPage(),
-    '/admin':     (_) => const AdminHome(),   
-    '/users':     (_) => const UsersTablePage(),  
-    '/register': (_) => const RegisterPage(),
-    '/access-log': (_) => const AccessLogBitacoryPage(),
-    '/dashboards': (_) => const AdminDashboardPage(),
-    '/system-logs': (_) => const SystemLogsPage(),
-    '/incidents': (_) => const IncidentsPage(),
+    '/access-log':              (_) => const AccessLogBitacoryPage(),
+    '/system-logs':             (_) => const SystemLogsPage(),
+
+    // Vehicle Management
+    '/add':                     (_) => const AddVehiclePage(),
+
+    // Resident Features
+    '/resident':                (_) => const ResidentHome(),
+    '/incidents':               (_) => const IncidentsPage(),
+
+    // Guard Panel
+    '/guard':                   (_) => const GuardPanel(),
   },
 );
 

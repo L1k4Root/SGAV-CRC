@@ -20,9 +20,11 @@ class _ResidentInvitesPageState extends State<ResidentInvitesPage> {
   }
 
   Future<List<Map<String, dynamic>>> _fetchInvites() async {
+    final user = FirebaseAuth.instance.currentUser!;
     final snapshot = await FirebaseFirestore.instance
         .collection('invites')
         .where('active', isEqualTo: true)
+        .where('ownerEmail', isEqualTo: user.email)
         .get();
 
     return snapshot.docs.map((doc) {

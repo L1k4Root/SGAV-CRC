@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../shared/services/api_client.dart';
 import '../../../shared/services/access_log_repository.dart';
 import '../../../shared/models/access_log.dart';
@@ -13,6 +14,8 @@ class VehicleAccessTraceabilityPage extends StatefulWidget {
 class _VehicleAccessTraceabilityPageState extends State<VehicleAccessTraceabilityPage> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  final TextEditingController _residentController = TextEditingController();
+  String _residentQuery = '';
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +36,20 @@ class _VehicleAccessTraceabilityPageState extends State<VehicleAccessTraceabilit
               ),
               onChanged: (val) => setState(() {
                 _searchQuery = val.trim().toUpperCase();
+              }),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: _residentController,
+              decoration: const InputDecoration(
+                labelText: 'Buscar por residente (email)',
+                prefixIcon: Icon(Icons.person_search),
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (val) => setState(() {
+                _residentQuery = val.trim().toLowerCase();
               }),
             ),
           ),
@@ -78,6 +95,11 @@ class _VehicleAccessTraceabilityPageState extends State<VehicleAccessTraceabilit
                         future: ApiClient().getVehicle(log.plate),
                         builder: (ctx, vehSnap) {
                           final veh = vehSnap.data;
+                          // Apply resident filter (by ownerEmail) if provided
+                          if (_residentQuery.isNotEmpty &&
+                              !(veh?['ownerEmail']?.toString().toLowerCase().contains(_residentQuery) ?? false)) {
+                            return const SizedBox.shrink();
+                          }
                           return Container(
                             margin: const EdgeInsets.symmetric(vertical: 4),
                             padding: const EdgeInsets.symmetric(vertical: 8),
@@ -92,8 +114,47 @@ class _VehicleAccessTraceabilityPageState extends State<VehicleAccessTraceabilit
                                 Expanded(child: Text(log.plate)),
                                 Expanded(child: Text(veh?['model'] ?? '-')),
                                 Expanded(child: Text(veh?['color'] ?? '-')),
-                                Expanded(child: Text(veh?['ownerEmail'] ?? '-')),
-                                Expanded(child: Text(log.guardId)), // TODO: reemplazar con nombre del guardia
+                                Expanded(
+                                  child: FutureBuilder<QuerySnapshot>(
+                                    future: FirebaseFirestore.instance
+                                        .collection('users')
+                                        .where('email', isEqualTo: veh?['ownerEmail'])
+                                        .limit(1)
+                                        .get(),
+                                    builder: (ctx3, resSnap) {
+                                      if (resSnap.connectionState == ConnectionState.waiting) {
+                                        return const Text('-');
+                                      }
+                                      if (!resSnap.hasData || resSnap.data!.docs.isEmpty) {
+                                        return const Text('-');
+                                      }
+                                      final data = resSnap.data!.docs.first.data() as Map<String, dynamic>;
+                                      if (data['role'] != 'resident') {
+                                        return const Text('-');
+                                      }
+                                      return Text(data['email'] ?? '-');
+                                    },
+                                  ),
+                                ),
+                                Expanded(
+                                  child: FutureBuilder<DocumentSnapshot>(
+                                    future: FirebaseFirestore.instance.collection('users').doc(log.guardId).get(),
+                                    builder: (ctx2, userSnap) {
+                                      if (userSnap.connectionState == ConnectionState.waiting) {
+                                        return const Text('-');
+                                      }
+                                      if (!userSnap.hasData || !userSnap.data!.exists) {
+                                        return const Text('-');
+                                      }
+                                      final data = userSnap.data!.data() as Map<String, dynamic>;
+                                      if (data['role'] != 'guard') {
+                                        return const Text('-');
+                                      }
+                                      final email = data['email'] as String?;
+                                      return Text(email ?? '-');
+                                    },
+                                  ),
+                                ),
                                 SizedBox(
                                   width: 60,
                                   child: Center(
@@ -118,5 +179,12 @@ class _VehicleAccessTraceabilityPageState extends State<VehicleAccessTraceabilit
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _residentController.dispose();
+    super.dispose();
   }
 }

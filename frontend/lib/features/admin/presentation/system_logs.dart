@@ -134,7 +134,9 @@ class _SystemLogsPageState extends State<SystemLogsPage> {
                               DataCell(Text(formatted)),
                               DataCell(Text(data['event']?.toString() ?? '')),
                               DataCell(Text(data['module']?.toString() ?? '')),
-                              DataCell(Text(data['uid']?.toString() ?? '')),
+                              DataCell(Text(
+                                ((data['payload'] as Map<String, dynamic>?)?['email']?.toString() ?? '-'),
+                              )),
                               DataCell(Row(
                                 children: [
                                   sevIcon,

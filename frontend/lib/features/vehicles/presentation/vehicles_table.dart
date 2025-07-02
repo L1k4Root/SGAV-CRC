@@ -18,7 +18,7 @@ class _VehiclesTablePageState extends State<VehiclesTablePage> {
 
   @override
   Widget build(BuildContext context) {
-    final isAdmin = ModalRoute.of(context)?.settings.name == '/vehicles-admin';
+    final isAdmin = widget.ownerId == 'admin';
   @override
   void dispose() {
     _search.dispose();
@@ -66,7 +66,7 @@ class _VehiclesTablePageState extends State<VehiclesTablePage> {
             return (d['plate'] as String).contains(_filter);
           }).toList();
 
-          return _VehiclesDataTable(docs: docs);
+          return _VehiclesDataTable(docs: docs, isAdmin: isAdmin);
         },
       ),
     );
@@ -74,8 +74,9 @@ class _VehiclesTablePageState extends State<VehiclesTablePage> {
 }
 
 class _VehiclesDataTable extends StatefulWidget {
-  const _VehiclesDataTable({required this.docs});
+  const _VehiclesDataTable({required this.docs, required this.isAdmin});
   final List<QueryDocumentSnapshot> docs;
+  final bool isAdmin;
 
   @override
   State<_VehiclesDataTable> createState() => _VehiclesDataTableState();
@@ -120,7 +121,7 @@ class _VehiclesDataTableState extends State<_VehiclesDataTable> {
 
   @override
   Widget build(BuildContext context) {
-    final isAdmin = ModalRoute.of(context)?.settings.name == '/vehicles-admin';
+    final isAdmin = widget.isAdmin;
 
     final rows = widget.docs.map((d) {
       final plate = d['plate'] as String;

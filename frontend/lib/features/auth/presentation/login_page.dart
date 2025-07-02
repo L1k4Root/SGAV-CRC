@@ -17,69 +17,47 @@ class _LoginPageState extends State<LoginPage> {
   final _email = TextEditingController();
   final _pass = TextEditingController();
   bool _loading = false;
-  String? _error;
+
+  void _showError(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg)),
+    );
+  }
 
   Future<void> _signIn() async {
+    final email = _email.text.trim();
+    final pass  = _pass.text.trim();
+
+    if (email.isEmpty || pass.isEmpty) {
+      _showError('Completa ambos campos.');
+      return;
+    }
+
     setState(() => _loading = true);
-    try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _email.text.trim(),
-        password: _pass.text.trim(),
-      );
-      await LoggingService.info(
-        module: 'auth',
-        event: 'login_success',
-        uid: FirebaseAuth.instance.currentUser!.uid,
-        payload: {'email': _email.text.trim()},
-      );
-      // 1. Traer rol desde Firestore
-      final uid  = FirebaseAuth.instance.currentUser!.uid;
-      final doc  = await FirebaseFirestore.instance
-          .collection('users').doc(uid).get();
-      final role = doc.data()?['role'] as String? ?? 'resident';
-      // Check if user is blocked
-      final data = doc.data() ?? {};
-      final isBlocked = data['block'] as bool? ?? false;
-      if (isBlocked) {
-        await LoggingService.warning(
-          module: 'auth',
-          event: 'login_blocked',
-          uid: uid,
-          payload: {'email': _email.text.trim()},
-        );
-        setState(() {
-          _error = 'Usuario bloqueado. Contacta al administrador.';
-          _loading = false;
-        });
-        return;
-      }
+    final res = await AuthService.signIn(email, pass);
 
-      if (!mounted) return;
+    if (!mounted) return;
+    setState(() => _loading = false);
 
-      // 2. Redirigir según rol
-      switch (role) {
-        case 'guard':
-          Navigator.pushReplacementNamed(context, '/guard');
-          break;
-        case 'admin':
-          Navigator.pushReplacementNamed(context, '/admin');
-          break;
-        case 'resident':
-        default:
-          Navigator.pushReplacementNamed(context, '/resident');
-      }
-    } on FirebaseAuthException catch (e) {
-      await LoggingService.warning(
-        module: 'auth',
-        event: 'login_failed',
-        payload: {
-          'code': e.code,
-          'email': _email.text.trim(),
-        },
-      );
-      setState(() => _error = e.message);
-    } finally {
-      setState(() => _loading = false);
+    if (res.blocked) {
+      _showError('Usuario bloqueado. Contacta al administrador.');
+      return;
+    }
+    if (res.error != null) {
+      _showError(res.error!);
+      return;
+    }
+
+    switch (res.role) {
+      case 'guard':
+        Navigator.pushReplacementNamed(context, '/guard');
+        break;
+      case 'admin':
+        Navigator.pushReplacementNamed(context, '/admin');
+        break;
+      case 'resident':
+      default:
+        Navigator.pushReplacementNamed(context, '/resident');
     }
   }
 
@@ -156,10 +134,6 @@ Widget _quickLoginButtons() {
                   ),
                   const SizedBox(height: 16),
                   _quickLoginButtons(),
-                  if (_error != null) ...[
-                    const SizedBox(height: 12),
-                    Text(_error!, style: const TextStyle(color: Colors.red)),
-                  ],
                   const SizedBox(height: 24),
                   _loading
                       ? const CircularProgressIndicator()
@@ -182,5 +156,67 @@ Widget _quickLoginButtons() {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _email.dispose();
+    _pass.dispose();
+    super.dispose();
+  }
+}
+
+// === Domain-layer auth wrapper (to mover a auth_service.dart cuando separemos capas) ===
+enum AuthStatus { success, blocked, error }
+
+class AuthResponse {
+  AuthResponse({this.role, this.error, this.blocked = false});
+  final String? role;
+  final String? error;
+  final bool blocked;
+
+  bool get isSuccess => error == null && !blocked;
+}
+
+class AuthService {
+  static Future<AuthResponse> signIn(String email, String pass) async {
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: pass,
+      );
+
+      final uid = FirebaseAuth.instance.currentUser!.uid;
+      await LoggingService.info(
+        module: 'auth',
+        event: 'login_success',
+        uid: uid,
+        payload: {'email': email},
+      );
+
+      final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      final data = doc.data() ?? {};
+      final role = data['role'] as String? ?? 'resident';
+      final blocked = data['block'] as bool? ?? false;
+
+      if (blocked) {
+        await LoggingService.warning(
+          module: 'auth',
+          event: 'login_blocked',
+          uid: uid,
+          payload: {'email': email},
+        );
+        return AuthResponse(blocked: true);
+      }
+
+      return AuthResponse(role: role);
+    } on FirebaseAuthException catch (e) {
+      await LoggingService.warning(
+        module: 'auth',
+        event: 'login_failed',
+        payload: {'code': e.code, 'email': email},
+      );
+      return AuthResponse(error: e.message ?? 'Error desconocido');
+    }
   }
 }
