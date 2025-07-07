@@ -12,7 +12,6 @@ import '../../shared/models/access_log.dart';
 import '../../shared/services/access_log_repository.dart';
 import '../../shared/services/incident_repository.dart';
 import '../../shared/services/api_client.dart';
-import '../../features/users/presentation/incidents_page.dart';
 import 'qr_scanner_page.dart';
 
 class GuardPanel extends StatefulWidget {
@@ -24,7 +23,8 @@ class GuardPanel extends StatefulWidget {
 
 class _GuardPanelState extends State<GuardPanel> {
   final _plate = TextEditingController();
-  final _api = ApiClient();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final ApiClient _apiClient = ApiClient();
   final _accessLogRepo = AccessLogRepository();
   final _incidentRepo = IncidentRepository();
   TrafficLightState _lightState = TrafficLightState.idle;
@@ -44,7 +44,11 @@ class _GuardPanelState extends State<GuardPanel> {
       _lightState = TrafficLightState.idle;
     });
     final plate = plateInput.toUpperCase();
-    final result = await VehicleVerificationController.verifyPlate(plate);
+    final controller = VehicleVerificationController(
+      firestore: _firestore,
+      apiClient: _apiClient,
+    );
+    final result = await controller.verifyPlate(plate);
 
     setState(() {
       _vehicleInfo = result.data;

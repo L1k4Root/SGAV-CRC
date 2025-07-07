@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:sgav_frontend/features/admin/presentation/admin_home.dart';
 import 'package:sgav_frontend/features/admin/presentation/users_table.dart';
-import 'package:sgav_frontend/features/admin/presentation/admin_home.dart';
-import 'package:sgav_frontend/features/admin/presentation/users_table.dart';
 import 'package:sgav_frontend/features/users/presentation/resident_home.dart';
+import 'package:sgav_frontend/features/users/presentation/resident_invites_page.dart';
 import 'package:sgav_frontend/features/vehicles/presentation/vehicles_table.dart';
 import 'firebase_options.dart';
 import 'features/auth/presentation/login_page.dart';
@@ -51,6 +50,7 @@ class SGAVApp extends StatelessWidget {
 
     // Resident Features
     '/resident':                (_) => const ResidentHome(),
+    '/resident/invites':        (_) => const ResidentInvitesPage(),
     '/incidents':               (_) => const IncidentsPage(),
 
     // Guard Panel

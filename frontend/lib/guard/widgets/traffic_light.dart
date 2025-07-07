@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-enum TrafficLightState { idle, green, red, yellow }
+enum TrafficLightState { idle, green, red, yellow, off }
 
 class TrafficLight extends StatelessWidget {
   final TrafficLightState state;

@@ -2,16 +2,22 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:sgav_frontend/shared/services/api_client.dart';
 import '../widgets/traffic_light.dart';
 
-import '../widgets/traffic_light.dart';
-
 /// Controller to verify a plate and return its traffic light state and data.
 class VehicleVerificationController {
-  static Future<VerificationResult> verifyPlate(String plate) async {
+  VehicleVerificationController({
+    FirebaseFirestore? firestore,
+    ApiClient? apiClient,
+  })  : _firestore = firestore ?? FirebaseFirestore.instance,
+        _apiClient = apiClient ?? ApiClient();
+
+  final FirebaseFirestore _firestore;
+  final ApiClient _apiClient;
+
+  Future<VerificationResult> verifyPlate(String plate) async {
     final now = DateTime.now();
-    final firestore = FirebaseFirestore.instance;
 
     // Check invites
-    final inviteSnap = await firestore
+    final inviteSnap = await _firestore
         .collection('invites')
         .where('plate', isEqualTo: plate)
         .where('active', isEqualTo: true)
@@ -34,7 +40,7 @@ class VehicleVerificationController {
     }
 
     // Check vehicles
-    final data = await ApiClient().getVehicle(plate);
+    final data = await _apiClient.getVehicle(plate);
     final state = data == null
         ? TrafficLightState.red
         : (data['active'] == true ? TrafficLightState.green : TrafficLightState.yellow);
