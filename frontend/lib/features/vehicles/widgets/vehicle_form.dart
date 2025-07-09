@@ -1,7 +1,5 @@
-
-
 import 'package:flutter/material.dart';
-import '../../../shared/models/vehicles.dto.dart';
+import '../presentation/vehicles.dto.dart';
 import '../../../shared/utils/validators.dart';
 
 /// Callback with the completed [VehicleDto] when the form is submitted.
@@ -54,6 +52,7 @@ class _VehicleFormState extends State<VehicleForm> {
   late final TextEditingController _plateController;
   late final TextEditingController _modelController;
   late final TextEditingController _colorController;
+  late final TextEditingController _brandController;
   bool _oneTime = true;
   DateTime? _expiresOn;
 
@@ -64,6 +63,7 @@ class _VehicleFormState extends State<VehicleForm> {
     _plateController = TextEditingController(text: initial?.plate ?? '');
     _modelController = TextEditingController(text: initial?.model ?? '');
     _colorController = TextEditingController(text: initial?.color ?? '');
+    _brandController = TextEditingController(text: initial?.brand ?? '');
     _oneTime = initial?.oneTime ?? true;
     _expiresOn = initial?.expiresOn;
   }
@@ -73,6 +73,7 @@ class _VehicleFormState extends State<VehicleForm> {
     _plateController.dispose();
     _modelController.dispose();
     _colorController.dispose();
+    _brandController.dispose();
     super.dispose();
   }
 
@@ -95,6 +96,7 @@ class _VehicleFormState extends State<VehicleForm> {
       plate: _plateController.text.trim().toUpperCase(),
       model: _modelController.text.trim(),
       color: _colorController.text.trim(),
+      brand: _brandController.text.trim(),
       ownerId: widget.ownerId,
       ownerEmail: widget.ownerEmail,
       oneTime: widget.showOneTime ? _oneTime : null,
@@ -127,6 +129,13 @@ class _VehicleFormState extends State<VehicleForm> {
             controller: _colorController,
             decoration: const InputDecoration(labelText: 'Color'),
             validator: Validators.color,
+          ),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: _brandController,
+            decoration: const InputDecoration(labelText: 'Marca'),
+            validator: (value) =>
+                value == null || value.trim().isEmpty ? 'Ingrese la marca' : null,
           ),
           if (widget.showOneTime) ...[
             const SizedBox(height: 16),

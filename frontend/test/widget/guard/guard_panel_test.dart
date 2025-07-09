@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sgav_frontend/guard/presentation/guard_panel.dart';
-import 'package:sgav_frontend/guard/widgets/traffic_light.dart';
+import 'package:sgav_frontend/features/guard/presentation/guard_panel.dart';
+import 'package:sgav_frontend/features/guard/widgets/traffic_light.dart';
 
 void main() {
   testWidgets('GuardPanel initial UI and empty input validation', (WidgetTester tester) async {

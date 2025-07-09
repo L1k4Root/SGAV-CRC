@@ -36,7 +36,88 @@ class _IncidentsPageState extends State<IncidentsPage> {
         .orderBy('timestamp', descending: true);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Mis incidentes')),
+      appBar: AppBar(
+        title: const Text('Mis incidentes'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.report_problem),
+            tooltip: 'Reportar incidente',
+            onPressed: () {
+              final plateController = TextEditingController();
+              final descriptionController = TextEditingController();
+              String? errorText;
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return StatefulBuilder(
+                    builder: (context, setState) {
+                      return AlertDialog(
+                        title: const Text('Reportar incidente'),
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            TextField(
+                              controller: plateController,
+                              decoration: InputDecoration(
+                                labelText: 'Patente',
+                                errorText: errorText,
+                              ),
+                              textCapitalization: TextCapitalization.characters,
+                            ),
+                            const SizedBox(height: 8),
+                            TextField(
+                              controller: descriptionController,
+                              decoration: const InputDecoration(
+                                labelText: 'Descripción',
+                              ),
+                              maxLines: 3,
+                            ),
+                          ],
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('Cancelar'),
+                          ),
+                          TextButton(
+                            onPressed: () async {
+                              final plate = plateController.text.trim().toUpperCase();
+                              final snapshot = await FirebaseFirestore.instance
+                                  .collection('vehicles')
+                                  .where('plate', isEqualTo: plate)
+                                  .get();
+                              if (snapshot.docs.isEmpty) {
+                                setState(() {
+                                  errorText = 'Patente no existe';
+                                });
+                                return;
+                              }
+                              await FirebaseFirestore.instance
+                                  .collection('incidents')
+                                  .add({
+                                'plate': plate,
+                                'description': descriptionController.text.trim(),
+                                'timestamp': FieldValue.serverTimestamp(),
+                                'ownerId': uid,
+                                'ownerEmail': email,
+                              });
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Incidente registrado')),
+                              );
+                            },
+                            child: const Text('Enviar'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+              );
+            },
+          ),
+        ],
+      ),
       body: Column(
         children: [
           Padding(

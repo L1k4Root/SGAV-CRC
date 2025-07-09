@@ -1,6 +1,10 @@
+import 'dart:async';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../repositories/vehicles_repository.dart';
 import '../repositories/invite_repository.dart';
-import '../../../shared/models/vehicles.dto.dart';
+import '../presentation/vehicles.dto.dart';
 
 class VehicleService {
   final VehiclesRepository _vehiclesRepo;
@@ -13,7 +17,9 @@ class VehicleService {
         _inviteRepo = inviteRepo ?? InviteRepository();
 
   Future<bool> existsPermanent(String plate) async {
-    return await _vehiclesRepo.getByPlate(plate) != null;
+    final normalized = plate.trim().toUpperCase();
+    final allVehicles = await _vehiclesRepo.watchAll().first;
+    return allVehicles.any((v) => v.plate == normalized);
   }
 
   Future<List<VehicleDto>> getActiveInvites(String plate) async {

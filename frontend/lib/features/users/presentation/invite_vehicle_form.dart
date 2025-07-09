@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../vehicles/repositories/vehicles_repository.dart';
-import '../../../shared/models/vehicles.dto.dart';
+import '../../vehicles/presentation/vehicles.dto.dart';
 import '../../vehicles/widgets/vehicle_form.dart';
 import '../../vehicles/services/vehicle_service.dart';
 

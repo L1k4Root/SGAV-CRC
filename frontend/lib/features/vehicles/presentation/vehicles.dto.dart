@@ -14,6 +14,9 @@ class VehicleDto {
   /// Color principal (solo texto, ej. “Rojo”).
   final String color;
 
+  /// Marca del vehículo (ej. "Ford").
+  final String brand;
+
   /// UID del usuario que registró el vehículo.
   final String ownerId;
 
@@ -36,6 +39,7 @@ class VehicleDto {
     required this.plate,
     required this.model,
     required this.color,
+    required this.brand,
     required this.ownerId,
     required this.ownerEmail,
     this.active = true,
@@ -51,6 +55,7 @@ class VehicleDto {
       plate: (json['plate'] ?? '').toString(),
       model: (json['model'] ?? '').toString(),
       color: (json['color'] ?? '').toString(),
+      brand: (json['brand'] ?? '').toString(),
       ownerId: (json['ownerId'] ?? '').toString(),
       ownerEmail: (json['ownerEmail'] ?? '').toString(),
       active: json['active'] is bool ? json['active'] as bool : true,
@@ -65,6 +70,7 @@ class VehicleDto {
       'plate': plate.trim().toUpperCase(),
       'model': model.trim(),
       'color': color.trim(),
+      'brand': brand.trim(),
       'ownerId': ownerId,
       'ownerEmail': ownerEmail,
       'active': active,
@@ -86,6 +92,7 @@ class VehicleDto {
     String? plate,
     String? model,
     String? color,
+    String? brand,
     String? ownerId,
     String? ownerEmail,
     bool? active,
@@ -97,6 +104,7 @@ class VehicleDto {
       plate: plate ?? this.plate,
       model: model ?? this.model,
       color: color ?? this.color,
+      brand: brand ?? this.brand,
       ownerId: ownerId ?? this.ownerId,
       ownerEmail: ownerEmail ?? this.ownerEmail,
       active: active ?? this.active,

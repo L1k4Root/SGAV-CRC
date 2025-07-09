@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:sgav_frontend/guard/controllers/vehicle_verification_controller.dart';
-import 'package:sgav_frontend/guard/widgets/traffic_light.dart';
+import 'package:sgav_frontend/features/guard/controllers/vehicle_verification_controller.dart';
+import 'package:sgav_frontend/features/guard/widgets/traffic_light.dart';
 import 'package:sgav_frontend/shared/services/api_client.dart';
 
 /// Simple Fake for ApiClient so we can control getVehicle() output.

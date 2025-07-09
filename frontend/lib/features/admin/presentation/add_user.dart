@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:convert';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -75,6 +76,18 @@ class _AddUserPageState extends State<AddUserPage> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
 
+      // Ensure avatar bytes are available for both web and mobile
+      Uint8List? avatarData = _avatarBytes;
+      if (avatarData == null && _avatarFile != null) {
+        avatarData = await _avatarFile!.readAsBytes();
+      }
+
+      // Encode avatar as Base64 for Firestore
+      String? avatarBase64;
+      if (avatarData != null) {
+        avatarBase64 = base64Encode(avatarData);
+      }
+
     try {
       final repo = UserRepository();
       await repo.registerNewUser(
@@ -84,7 +97,7 @@ class _AddUserPageState extends State<AddUserPage> {
         role: _selectedRole,
         block: false,
         phone: _phoneCtrl.text.trim().isEmpty ? null : _phoneCtrl.text.trim(),
-        avatarBytes: _avatarBytes,
+        avatarBase64: avatarBase64,
       );
       if (mounted) {
         _quickSnack('Usuario creado correctamente');

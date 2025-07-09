@@ -7,7 +7,7 @@ import 'package:sgav_frontend/features/users/presentation/resident_invites_page.
 import 'package:sgav_frontend/features/vehicles/presentation/vehicles_table.dart';
 import 'firebase_options.dart';
 import 'features/auth/presentation/login_page.dart';
-import 'guard/presentation/guard_panel.dart';
+import 'features/guard/presentation/guard_panel.dart';
 import 'features/vehicles/presentation/add_vehicle_page.dart';
 import 'features/admin/presentation/add_user.dart';
 import 'features/admin/presentation/vehicle_access_traceability.dart';
@@ -46,7 +46,11 @@ class SGAVApp extends StatelessWidget {
     '/system-logs':             (_) => const SystemLogsPage(),
 
     // Vehicle Management
-    '/add':                     (_) => const AddVehiclePage(),
+    '/add':                     (context) {
+      final args = ModalRoute.of(context)?.settings.arguments;
+      final uid = args is String ? args : ''; // replace with actual user ID retrieval logic
+      return AddVehiclePage();
+    },
 
     // Resident Features
     '/resident':                (_) => const ResidentHome(),

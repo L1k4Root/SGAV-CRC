@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../../shared/models/vehicles.dto.dart';
+import '../presentation/vehicles.dto.dart';
 
 class InviteRepository {
   final CollectionReference _col =

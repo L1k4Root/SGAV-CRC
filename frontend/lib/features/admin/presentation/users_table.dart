@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UsersTablePage extends StatelessWidget {
@@ -20,66 +21,95 @@ class UsersTablePage extends StatelessWidget {
           return LayoutBuilder(
             builder: (ctx2, constraints) {
               return Center(
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(minWidth: constraints.maxWidth),
-                    child: DataTable(
-                      columns: const [
-                        DataColumn(label: Text('Email')),
-                        DataColumn(label: Text('Rol')),
-                        DataColumn(label: Text('Bloquear')),
-                        DataColumn(label: Text('Acción')),
-                        DataColumn(label: Text('Eliminar')),
-                      ],
-                      rows: docs.map((d) {
-                        final data = d.data()! as Map<String, dynamic>;
-                        final email = data['email'] as String? ?? '—';
-                        final role  = data['role']  as String? ?? 'resident';
-                        return DataRow(cells: [
-                          DataCell(Text(email)),
-                          DataCell(Text(role)),
-                          DataCell(
-                            IconButton(
-                              icon: Icon(
-                                (data['block'] as bool? ?? false)
-                                    ? Icons.lock
-                                    : Icons.lock_open,
-                                size: 18,
-                                color: (data['block'] as bool? ?? false)
-                                    ? Colors.red
-                                    : Colors.green,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                          child: Card(
+                            elevation: 2,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: DataTable(
+                                headingRowColor: MaterialStateProperty.all(Colors.grey.shade200),
+                                dataRowHeight: 60,
+                                columns: const [
+                                  DataColumn(label: Text('Foto')),
+                                  DataColumn(label: Text('Email')),
+                                  DataColumn(label: Text('Rol')),
+                                  DataColumn(label: Text('Bloquear')),
+                                  DataColumn(label: Text('Acción')),
+                                  DataColumn(label: Text('Eliminar')),
+                                ],
+                                rows: docs.map((d) {
+                                  final data = d.data()! as Map<String, dynamic>;
+                                  final email = data['email'] as String? ?? '—';
+                                  final role  = data['role']  as String? ?? 'resident';
+                                  return DataRow(cells: [
+                                    DataCell(
+                                      data['avatarBase64'] != null
+                                        ? CircleAvatar(
+                                            radius: 20,
+                                            backgroundImage: MemoryImage(base64Decode(data['avatarBase64'] as String)),
+                                          )
+                                        : const CircleAvatar(
+                                            radius: 20,
+                                            backgroundImage: AssetImage('assets/default_avatar.png'),
+                                          ),
+                                    ),
+                                    DataCell(Text(email)),
+                                    DataCell(Text(role)),
+                                    DataCell(
+                                      IconButton(
+                                        icon: Icon(
+                                          (data['block'] as bool? ?? false)
+                                              ? Icons.lock
+                                              : Icons.lock_open,
+                                          size: 18,
+                                          color: (data['block'] as bool? ?? false)
+                                              ? Colors.red
+                                              : Colors.green,
+                                        ),
+                                        tooltip: (data['block'] as bool? ?? false)
+                                            ? 'Desbloquear usuario'
+                                            : 'Bloquear usuario',
+                                        onPressed: () => _toggleBlock(
+                                          context,
+                                          d.id,
+                                          data['block'] as bool? ?? false,
+                                        ),
+                                      ),
+                                    ),
+                                    DataCell(
+                                      IconButton(
+                                        icon: const Icon(Icons.edit, size: 18),
+                                        tooltip: 'Cambiar rol',
+                                        onPressed: () =>
+                                            _showRoleDialog(context, d.id, role),
+                                      ),
+                                    ),
+                                    DataCell(
+                                      IconButton(
+                                        icon: const Icon(Icons.delete,
+                                            size: 18, color: Colors.red),
+                                        tooltip: 'Eliminar usuario',
+                                        onPressed: () => _confirmDeleteUser(context, d.id),
+                                      ),
+                                    ),
+                                  ]);
+                                }).toList(),
                               ),
-                              tooltip: (data['block'] as bool? ?? false)
-                                  ? 'Desbloquear usuario'
-                                  : 'Bloquear usuario',
-                              onPressed: () => _toggleBlock(
-                                context,
-                                d.id,
-                                data['block'] as bool? ?? false,
-                              ),
                             ),
                           ),
-                          DataCell(
-                            IconButton(
-                              icon: const Icon(Icons.edit, size: 18),
-                              tooltip: 'Cambiar rol',
-                              onPressed: () =>
-                                  _showRoleDialog(context, d.id, role),
-                            ),
-                          ),
-                          DataCell(
-                            IconButton(
-                              icon: const Icon(Icons.delete,
-                                  size: 18, color: Colors.red),
-                              tooltip: 'Eliminar usuario',
-                              onPressed: () => _confirmDeleteUser(context, d.id),
-                            ),
-                          ),
-                        ]);
-                      }).toList(),
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               );
             },

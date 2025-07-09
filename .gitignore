@@ -29,6 +29,7 @@ lib/firebase_options.dart
 
 # Firebase secrets
 backend/src/firebase.json
+frontend/storage.rules
 
 # macOS
 *.xcworkspace/

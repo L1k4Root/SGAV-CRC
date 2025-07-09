@@ -1,5 +1,3 @@
-
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class User {
@@ -9,7 +7,7 @@ class User {
   final String role;
   final bool block;
   final String? phone;
-  final String? photoURL;
+  final String? avatarBase64;
   final Timestamp? createdAt;
 
   User({
@@ -19,7 +17,7 @@ class User {
     required this.role,
     this.block = false,
     this.phone,
-    this.photoURL,
+    this.avatarBase64,
     this.createdAt,
   });
 
@@ -32,7 +30,7 @@ class User {
       'role': role,
       'block': block,
       if (phone != null) 'phone': phone,
-      if (photoURL != null) 'photoURL': photoURL,
+      if (avatarBase64 != null) 'avatarBase64': avatarBase64,
       'createdAt': createdAt ?? FieldValue.serverTimestamp(),
     };
   }
@@ -46,7 +44,7 @@ class User {
       role: map['role'] as String,
       block: map['block'] as bool? ?? false,
       phone: map['phone'] as String?,
-      photoURL: map['photoURL'] as String?,
+      avatarBase64: map['avatarBase64'] as String?,
       createdAt: map['createdAt'] as Timestamp?,
     );
   }

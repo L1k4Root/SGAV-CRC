@@ -4,14 +4,14 @@ import 'package:sgav_frontend/shared/widgets/logout_button.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:sgav_frontend/guard/controllers/vehicle_verification_controller.dart';
-import 'package:sgav_frontend/guard/widgets/traffic_light.dart';
-import 'package:sgav_frontend/guard/widgets/vehicle_info_card.dart';
-import 'package:sgav_frontend/guard/widgets/incident_dialog.dart';
-import '../../shared/models/access_log.dart';
-import '../../shared/services/access_log_repository.dart';
-import '../../shared/services/incident_repository.dart';
-import '../../shared/services/api_client.dart';
+import 'package:sgav_frontend/features/guard/controllers/vehicle_verification_controller.dart';
+import 'package:sgav_frontend/features/guard/widgets/traffic_light.dart';
+import 'package:sgav_frontend/features/guard/widgets/vehicle_info_card.dart';
+import 'package:sgav_frontend/features/guard/widgets/incident_dialog.dart';
+import '../../../shared/models/access_log.dart';
+import '../../../shared/services/access_log_repository.dart';
+import '../../../shared/services/incident_repository.dart';
+import '../../../shared/services/api_client.dart';
 import 'qr_scanner_page.dart';
 
 class GuardPanel extends StatefulWidget {

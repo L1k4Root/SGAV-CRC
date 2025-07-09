@@ -1,1 +1,1 @@
-{"flutter":{"platforms":{"dart":{"lib/firebase_options.dart":{"projectId":"sgav-crc","configurations":{"web":"1:895260370492:web:106796babea25c04e78539"}}}}}}
+{"flutter":{"platforms":{"dart":{"lib/firebase_options.dart":{"projectId":"sgav-crc","configurations":{"web":"1:895260370492:web:106796babea25c04e78539"}}}}},"storage":{"rules":"storage.rules"}}

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:sgav_frontend/shared/widgets/logout_button.dart';
-import 'package:sgav_frontend/features/vehicles/presentation/add_vehicle_page.dart';
 import 'package:sgav_frontend/shared/services/export_service.dart';
 
 class AdminHome extends StatelessWidget {
@@ -57,10 +57,7 @@ class AdminHome extends StatelessWidget {
           ElevatedButton.icon(
             icon: const Icon(Icons.add),
             label: const Text('Agregar vehículo'),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const AddVehiclePage()),
-            ),
+            onPressed: () => Navigator.pushNamed(context, '/add'),
           ),
         ]),
 
